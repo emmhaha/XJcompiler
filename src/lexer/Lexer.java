@@ -38,12 +38,11 @@ public class Lexer {
 
     public Token getToken() throws IOException {
         StringBuffer buffer = new StringBuffer();
-        while (true) {
+        do {
             readChar();
-            if (!Character.isWhitespace(current_c)) break;
-        }
+        } while (Character.isWhitespace(current_c));
 
-        while (current_c != (char)-1) {
+            while (current_c != (char)-1) {
             if (current_c == '+') return new Token(Tag.ADD);
             if (current_c == '-') return new Token(Tag.SUB);
             if (current_c == '*') return new Token(Tag.MUL);
