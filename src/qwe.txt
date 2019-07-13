@@ -1,1 +1,8 @@
-qwe
+{
+    int i;
+    float f;
+    if (i == 0) {
+        printf("23%d", i);
+    }
+
+}

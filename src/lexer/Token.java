@@ -2,26 +2,18 @@ package lexer;
 
 public class Token {
 
-    public final String tag;
-    public Integer value;
+    public final int tag;
 
-    Token(String tag) {
+    Token(int tag) {
         this.tag = tag;
-        show();
     }
 
-    Token(String tag, int value) {
-        this.tag = tag;
-        this.value = value;
-        show();
-    }
-
-    private void show() {
-        System.out.print(toString() + " ");
+    public void show(String end) {
+        if (end == null) end = "";
+        System.out.print(toString() + end);
     }
 
     public String toString() {
-        if (value != null) return Integer.toString(value);
-        else return "" + tag;
+        return "" + (char) tag;
     }
 }
