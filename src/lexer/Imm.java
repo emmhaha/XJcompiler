@@ -14,4 +14,8 @@ public class Imm<T> extends Token {
         System.out.print(num + end);
     }
 
+    public String toString() {
+        return num + "";
+    }
+
 }

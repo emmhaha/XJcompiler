@@ -32,7 +32,7 @@ public class Item {
         this.value.addAll(Arrays.asList(value.split(" ")));
     }
 
-    public void setID(int id) {
+    private void setID(int id) {
         this.id = id;
     }
 

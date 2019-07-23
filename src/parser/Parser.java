@@ -12,6 +12,7 @@ public class Parser {
     private Lexer lexer;
     private Token token;
     private LinkedList<Integer> stateStack = new LinkedList<>();
+    private LinkedList<String> symbolStack = new LinkedList<>();
     private ArrayList<ItemSet> stateSet = new ArrayList<>();
     private ItemSet grammar = new ItemSet();
     private ArrayList<String> symbols = new ArrayList<>();
@@ -21,8 +22,8 @@ public class Parser {
     public Parser(Lexer lexer) throws IOException {
         this.lexer = lexer;
         init();
-        //showState();
-        //showTable(9);
+        showState();
+        showTable(9);
         analyze();
 
 //        while ((token = lexer.getToken()) != null) {
@@ -32,29 +33,29 @@ public class Parser {
 
     private void init() {
 
-//        String[] G = {
-//                "program -> block", "block -> { decls stmts }", "decls -> decls decl",
-//                "decls -> NULL", "decl -> type ID ;", "type -> type [ NUM ]",
-//                "type -> BASIC", "stmts -> stmts stmt", "stmts -> NULL",
-//                "stmt -> loc = bool ;", "stmt -> IF ( bool ) stmt",
-//                "stmt -> IF ( bool ) stmt ELSE stmt", "stmt -> WHILE ( bool ) stmt",
-//                "stmt -> DO stmt WHILE ( bool ) ;", "stmt -> BREAK ;", "stmt -> block",
-//                "loc -> loc [ bool ]", "loc -> ID", "bool -> bool || join",
-//                "bool -> join", "join -> join && equality", "join -> equality",
-//                "equality -> equality == rel", "equality -> equality != rel",
-//                "equality -> rel", "rel -> expr < expr", "rel -> expr <= expr",
-//                "rel -> expr >= expr", "rel -> expr > expr", "rel -> expr",
-//                "expr -> expr + term", "expr -> expr - term", "expr -> term",
-//                "term -> term * unary", "term -> term / unary", "term -> unary",
-//                "unary -> ! unary", "unary -> - unary", "unary -> factor",
-//                "factor -> ( bool )", "factor -> loc", "factor -> NUM",
-//                "factor -> REAL", "factor -> TRUE", "factor -> FALSE"
-//        };
-
         String[] G = {
-                "e -> e + t", "e -> t", "t -> t * f", "t -> f",
-                "f -> ( e )", "f -> NUM"
+                "program -> block", "block -> { decls stmts }", "decls -> decls decl",
+                "decls -> $", "decl -> type ID ;", "type -> type [ NUM ]",
+                "type -> BASIC", "stmts -> stmts stmt", "stmts -> $",
+                "stmt -> loc = bool ;", "stmt -> IF ( bool ) stmt",
+                "stmt -> IF ( bool ) stmt ELSE stmt", "stmt -> WHILE ( bool ) stmt",
+                "stmt -> DO stmt WHILE ( bool ) ;", "stmt -> BREAK ;", "stmt -> block",
+                "loc -> loc [ bool ]", "loc -> ID", "bool -> bool || join",
+                "bool -> join", "join -> join && equality", "join -> equality",
+                "equality -> equality == rel", "equality -> equality != rel",
+                "equality -> rel", "rel -> expr < expr", "rel -> expr <= expr",
+                "rel -> expr >= expr", "rel -> expr > expr", "rel -> expr",
+                "expr -> expr + term", "expr -> expr - term", "expr -> term",
+                "term -> term * unary", "term -> term / unary", "term -> unary",
+                "unary -> ! unary", "unary -> - unary", "unary -> factor",
+                "factor -> ( bool )", "factor -> loc", "factor -> NUM",
+                "factor -> REAL", "factor -> TRUE", "factor -> FALSE"
         };
+
+//        String[] G = {
+//                "e -> e + t", "e -> t", "t -> t * f", "t -> f",
+//                "f -> ( e )", "f -> NUM", "f -> NULL"
+//        };
 
 //        String[] G = {
 //                "s -> c c", "c -> C c", "c -> D"
@@ -89,16 +90,25 @@ public class Parser {
     private void analyze() throws IOException {
         stateStack.add(0);
         Token a = move();
-        while (a != null) {
+        while (true) {
+            if (a == null) a = new Token("$");
+            dumpState(a.tag, 6);
             int topState = stateStack.getLast();
             String action = getTable(Action, topState, a.tag);
+
+            if (action == null) action = getTable(Action, topState, "$");
             if (action == null) {
-                System.out.printf("在第%d行附近可能有错\n", lexer.lines);
+                System.out.printf("在第%d行附近可能有错\n出错词法单元：%s", lexer.lines, a.toString());
                 return;
             }
-            else if (action.charAt(0) == 's') {
+            if (action.charAt(0) == 's' || action.charAt(0) == 'S') {
                 int state = Integer.parseInt(action.substring(1));
                 stateStack.addLast(state);
+                if (action.charAt(0) == 'S') {
+                    symbolStack.addLast("$");
+                    continue;
+                }
+                symbolStack.addLast(a.tag);
                 a = move();
             }
             else if (action.charAt(0) == 'r') {
@@ -107,15 +117,31 @@ public class Parser {
                 int size = item.value.size();
                 for (int i = 0; i < size; i++) {
                     stateStack.removeLast();
+                    symbolStack.removeLast();
                 }
                 topState = stateStack.getLast();
                 String state = getTable(Goto, topState, item.key);
                 assert state != null;
                 stateStack.addLast(Integer.parseInt(state));
+                symbolStack.addLast(item.key);
             }
-            else break;
+            else if (action.equals("acc")) break;
         }
         System.out.println("语法正确！");
+    }
+
+    private void dumpState(String tag, int width) {
+        printSpace(width);
+        for (String s : symbolStack) {
+            System.out.print(s);
+            printSpace(width - s.length());
+        }
+        System.out.printf("  '%s'\n", tag);
+        for (int i : stateStack) {
+            System.out.print(i);
+            printSpace(width - String.valueOf(i).length());
+        }
+        System.out.print("\n\n");
     }
 
     private void setGoto (int i, String s, String value) {
@@ -155,7 +181,10 @@ public class Parser {
                     setGoto(j.ID, s, stateSet.indexOf(newState) + "");    // GOTO表构造
                     j.forEach(item -> {              // ACTION表构造条件第一条
                         if (!Character.isLowerCase(s.charAt(0)) && s.equals(item.nextToPoint(1))) {
-                            setAction(j.ID, s, "s" + stateSet.indexOf(newState) + "");
+                            String symbol;
+                            if (s.equals("$")) symbol = "S";
+                            else symbol = "s";
+                            setAction(j.ID, s, symbol + stateSet.indexOf(newState) + "");
                         }
                     });
                 }
@@ -164,8 +193,9 @@ public class Parser {
         for(ItemSet is : stateSet) {    // ACTION表构造条件第二、三条
             for (Item i : is) {
                 if (i.equals(initial_item.movePoint())) setAction(is.ID, i.f_symbol, "acc");
-                if (!i.key.equals(initial_item.key) && i.nextToPoint(1) == null)
+                if (!i.key.equals(initial_item.key) && i.nextToPoint(1) == null) {
                     setAction(is.ID, i.f_symbol, "r" + grammar.getItem(i).id);
+                }
             }
         }
     }
@@ -200,10 +230,10 @@ public class Parser {
             if (i == null) continue;
             HashSet<String> tempSet = FIRST(i);
             tempSet.forEach(s -> {                      // 加入所有不为空的
-                if (!s.equals("NULL")) hashSet.add(s);
+                if (!s.equals("$")) hashSet.add(s);
             });
-            if (!tempSet.contains("NULL")) break;
-            if (keys[keys.length - 1].equals(i)) hashSet.add("NULL");
+            if (!tempSet.contains("$")) break;
+            if (keys[keys.length - 1].equals(i)) hashSet.add("$");
         }
         return hashSet;
     }
@@ -232,7 +262,7 @@ public class Parser {
             for (String i : item.value) {
                 if (key.equals(i)) break;          // 出现左递归说明当前产生式已经推不出结果，应该从其他同名产生式得出结果
                                                     // 所以应当跳过当前产生式
-                if (i.equals("NULL")) return true;
+                if (i.equals("$")) return true;
                 if (!Character.isLowerCase(key.charAt(0))) break;    // 终结符号
                 if (!canDeriveNull(i)) break;
                 if (item.value.indexOf(i) == item.value.size()-1) return true;    // 所有非终结符号都能推出空
@@ -252,7 +282,7 @@ public class Parser {
         System.out.print("\n\n语法分析表：\n");
         printSpace(width - 1);
         ArrayList<String> symbols_goto = new ArrayList<>(symbols);
-        symbols.add("$");
+        if (!symbols.contains("$")) symbols.add("$");
         symbols.removeIf(s -> Character.isLowerCase(s.charAt(0)));
         symbols_goto.removeIf(s -> !Character.isLowerCase(s.charAt(0)));
         for (String s : symbols) {
@@ -284,7 +314,7 @@ public class Parser {
                 printSpace(symbols.size() * width);
                 System.out.print("|   ");
             }
-            if (row_goto != null)
+            if (row_goto != null) {
                 for (String s : symbols_goto) {
                     if (row_goto.get(s) == null) printSpace(width);
                     else {
@@ -293,7 +323,9 @@ public class Parser {
                         printSpace(width - val.length());
                     }
                 }
+            }
         }
+        System.out.print("\n\n");
     }
 
     private void printSpace(int num) {
