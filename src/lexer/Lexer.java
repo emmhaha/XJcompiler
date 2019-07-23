@@ -6,7 +6,7 @@ import java.util.Hashtable;
 
 public class Lexer {
 
-    private int lines = 1;
+    public int lines = 1;
     private char current_c;
     private char next_c = ' ';
     private Reader reader;
@@ -23,8 +23,7 @@ public class Lexer {
             System.out.println("文件不存在！请检查路径是否正确");
             return;
         }
-        Reader reader = new InputStreamReader(new FileInputStream(file));
-        this.reader = reader;
+        reader = new InputStreamReader(new FileInputStream(file));
 
         save(Type.Bool);
         save(Type.Float);
@@ -59,6 +58,7 @@ public class Lexer {
         boolean next_line = false;
         do {                                           // 去除空白，每次调用这个函数时，current_c指向上一个词法单元的末尾
             readChar();                                // 所以要先读入下一个字符
+            if (current_c == (char) -1) return null;
             if (current_c == '\r' && next_c == '\n') {
                 lines += 1;
                 next_line = false;
@@ -69,22 +69,22 @@ public class Lexer {
         switch (current_c) {
             case '&':
                 if (readChar('&')) return Word.and;
-                else return new Token('&');
+                else return new Token("&");
             case '|':
                 if (readChar('|')) return Word.or;
-                else return new Token('|');
+                else return new Token("|");
             case '=':
                 if (readChar('=')) return Word.equal;
-                else return new Token('=');
+                else return new Token("=");
             case '!':
                 if (readChar('=')) return Word.unequal;
-                else return new Token('!');
+                else return new Token("!");
             case '<':
                 if (readChar('=')) return Word.le;
-                else return new Token('<');
+                else return new Token("<");
             case '>':
                 if (readChar('=')) return Word.ge;
-                else return new Token('>');
+                else return new Token(">");
         }
 
         if (Character.isDigit(current_c)) {
@@ -117,7 +117,7 @@ public class Lexer {
         }
 
         if (current_c == (char) -1) return null;
-        return new Token(current_c);     // 所有字符
+        return new Token(current_c + "");     // 其他所有字符
     }
 
 }

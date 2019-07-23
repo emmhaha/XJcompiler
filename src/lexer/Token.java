@@ -2,18 +2,15 @@ package lexer;
 
 public class Token {
 
-    public final int tag;
+    public final String tag;
 
-    Token(int tag) {
+    Token(String tag) {
         this.tag = tag;
     }
 
     public void show(String end) {
         if (end == null) end = "";
-        System.out.print(toString() + end);
+        System.out.print(tag + end);
     }
 
-    public String toString() {
-        return "" + (char) tag;
-    }
 }

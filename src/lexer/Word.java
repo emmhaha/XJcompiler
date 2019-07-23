@@ -14,9 +14,13 @@ public class Word extends Token {
             True    = new Word("true",  Tag.TRUE   ),
             False   = new Word("false", Tag.FALSE  );
 
-    Word(String value, int tag) {
+    Word(String value, String tag) {
         super(tag);
         this.value = value;
+    }
+
+    public String toString() {
+        return value;
     }
 
     public void show(String end) {

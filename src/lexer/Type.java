@@ -8,8 +8,9 @@ public class Type extends Word {
             Float = new Type("float", Tag.BASIC_TYPE, 8),
             Bool = new Type("bool", Tag.BASIC_TYPE, 1);
 
-    Type(String value, int tag, int width) {
+    Type(String value, String tag, int width) {
         super(value, tag);
         this.width = width;
     }
+
 }
