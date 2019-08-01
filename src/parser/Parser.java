@@ -1,7 +1,7 @@
 package parser;
 
+import inter.*;
 import lexer.Lexer;
-import lexer.Tag;
 import lexer.Token;
 
 import java.io.IOException;
@@ -12,14 +12,16 @@ public class Parser {
     private Lexer lexer;
     private Token token;
     private LinkedList<Integer> stateStack = new LinkedList<>();
-    private LinkedList<String> symbolStack = new LinkedList<>();
     private ArrayList<ItemSet> stateSet = new ArrayList<>();
     private ItemSet grammar = new ItemSet();
     private ArrayList<String> symbols = new ArrayList<>();
     private Hashtable<Integer, Hashtable<String, String>> Action = new Hashtable<>();
     private Hashtable<Integer, Hashtable<String, String>> Goto = new Hashtable<>();
+    public LinkedList<Token> symbolStack = new LinkedList<>();
+    public Hashtable<Integer, Unit> semanticStack = new Hashtable<>();
+    public Env env = new Env(null);
 
-    public Parser(Lexer lexer) throws IOException {
+    public Parser(Lexer lexer) throws IOException, Error {
         this.lexer = lexer;
         init();
         showState();
@@ -40,9 +42,9 @@ public class Parser {
                 "stmt -> loc = bool ;", "stmt -> IF ( bool ) stmt",
                 "stmt -> IF ( bool ) stmt ELSE stmt", "stmt -> WHILE ( bool ) stmt",
                 "stmt -> DO stmt WHILE ( bool ) ;", "stmt -> BREAK ;", "stmt -> block",
-                "loc -> loc [ bool ]", "loc -> ID", "bool -> bool || join",
-                "bool -> join", "join -> join && equality", "join -> equality",
-                "equality -> equality == rel", "equality -> equality != rel",
+                "loc -> loc [ bool ]", "loc -> ID",
+                "bool -> bool || join", "bool -> join", "join -> join && equality",
+                "join -> equality", "equality -> equality == rel", "equality -> equality != rel",
                 "equality -> rel", "rel -> expr < expr", "rel -> expr <= expr",
                 "rel -> expr >= expr", "rel -> expr > expr", "rel -> expr",
                 "expr -> expr + term", "expr -> expr - term", "expr -> term",
@@ -87,33 +89,41 @@ public class Parser {
         return false;
     }
 
+    public void error(String message) {
+        String lex = "EOF";
+        if (token != null ) lex = token.toString();
+        throw new Error("在第" + lexer.lines + "行附近可能有错，检测到出错的词法单元：“" + lex + "” 。\n\t\t\t\t\t\t\t\t\t\t\t" + message);
+    }
+
     private void analyze() throws IOException {
         stateStack.add(0);
         Token a = move();
         while (true) {
             if (a == null) a = new Token("$");
-            dumpState(a.tag, 6);
+            showState(a.tag, 6);
             int topState = stateStack.getLast();
             String action = getTable(Action, topState, a.tag);
 
             if (action == null) action = getTable(Action, topState, "$");
             if (action == null) {
-                System.out.printf("在第%d行附近可能有错\n出错词法单元：%s", lexer.lines, a.toString());
+                error("");
                 return;
             }
             if (action.charAt(0) == 's' || action.charAt(0) == 'S') {
                 int state = Integer.parseInt(action.substring(1));
                 stateStack.addLast(state);
                 if (action.charAt(0) == 'S') {
-                    symbolStack.addLast("$");
+                    symbolStack.addLast(new Token("$"));
                     continue;
                 }
-                symbolStack.addLast(a.tag);
+                symbolStack.addLast(a);
                 a = move();
+                if (a != null && a.tag.equals("{")) this.env = new Env(env);
             }
             else if (action.charAt(0) == 'r') {
                 int id = Integer.parseInt(action.substring(1));
                 Item item = grammar.getItem(id);
+                semanticAnalysis(item);
                 int size = item.value.size();
                 for (int i = 0; i < size; i++) {
                     stateStack.removeLast();
@@ -123,18 +133,82 @@ public class Parser {
                 String state = getTable(Goto, topState, item.key);
                 assert state != null;
                 stateStack.addLast(Integer.parseInt(state));
-                symbolStack.addLast(item.key);
+                symbolStack.addLast(new Token(item.key));
             }
             else if (action.equals("acc")) break;
         }
-        System.out.println("语法正确！");
+        System.out.println("中间代码：");
+        Unit unit = semanticStack.get(0);
+        unit.codes.forEach(s -> {
+            if (s.charAt(0) != 'L') System.out.println("\t" + s);
+            else System.out.println(s);
+        });
+//        semanticStack.forEach((integer, unit) ->
+//            System.out.println(integer + " " + unit.codes)
+//        );
     }
 
-    private void dumpState(String tag, int width) {
+    private void semanticAnalysis(Item item) {
+        String firstLex = item.value.get(0);
+        FunctionSet functionSet = new FunctionSet(this, firstLex);
+        switch (item.key) {
+            case "program":
+                functionSet.program();
+                break;
+            case "block":
+                functionSet.block();
+                this.env = env.nextEnv;
+                break;
+            case "decls":
+                functionSet.decls();
+                break;
+            case "decl":
+                functionSet.decl();
+                break;
+            case "type":
+                functionSet.type();
+                break;
+            case "stmts":
+                functionSet.stmts();
+                break;
+            case "stmt":
+                functionSet.stmt();
+                break;
+            case "loc":
+                functionSet.loc();
+                break;
+            case "bool":
+                functionSet.bool();
+                break;
+            case "join":
+                functionSet.join();
+                break;
+            case "equality":
+                functionSet.equality();
+                break;
+            case "rel":
+                if (item.value.size() > 1) functionSet.rel();
+                break;
+            case "expr":
+                functionSet.expr();
+                break;
+            case "term":
+                functionSet.term();
+                break;
+            case "unary":
+                functionSet.unary();
+                break;
+            case "factor":
+                functionSet.factor();
+                break;
+        }
+    }
+
+    private void showState(String tag, int width) {
         printSpace(width);
-        for (String s : symbolStack) {
-            System.out.print(s);
-            printSpace(width - s.length());
+        for (Token s : symbolStack) {
+            System.out.print(s.tag);
+            printSpace(width - s.tag.length());
         }
         System.out.printf("  '%s'\n", tag);
         for (int i : stateStack) {
@@ -247,28 +321,28 @@ public class Parser {
         for (Item item : grammar.getItem(key)) {    // 文法中每个非终结符号为key的产生式
             for (String s : item.value) {           // 产生式体中的每个符号
                 if (key.equals(s)) {    // 如果出现左递归就判断是否能推出空
-                    if (!canDeriveNull(s)) break;   // 不能推出空就跳过当前产生式，通过上层循环中的同名非递归产生式来求FIRST(s)
+                    if (cantDeriveNull(s)) break;   // 不能推出空就跳过当前产生式，通过上层循环中的同名非递归产生式来求FIRST(s)
                     else continue;    // 若能推出空就跳过当前文法符号，继续求此产生式的下一符号的FIRST集
                 }
                 hashSet.addAll(FIRST(s));
-                if (!canDeriveNull(s)) break;
+                if (cantDeriveNull(s)) break;
             }
         }
         return hashSet;
     }
 
-    private boolean canDeriveNull(String key) {
+    private boolean cantDeriveNull(String key) {
         for (Item item : grammar.getItem(key)) {
             for (String i : item.value) {
                 if (key.equals(i)) break;          // 出现左递归说明当前产生式已经推不出结果，应该从其他同名产生式得出结果
                                                     // 所以应当跳过当前产生式
-                if (i.equals("$")) return true;
+                if (i.equals("$")) return false;
                 if (!Character.isLowerCase(key.charAt(0))) break;    // 终结符号
-                if (!canDeriveNull(i)) break;
-                if (item.value.indexOf(i) == item.value.size()-1) return true;    // 所有非终结符号都能推出空
+                if (cantDeriveNull(i)) break;
+                if (item.value.indexOf(i) == item.value.size()-1) return false;    // 所有非终结符号都能推出空
             }
         }
-        return false;
+        return true;
     }
 
     public void showState() {

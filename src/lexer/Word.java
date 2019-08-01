@@ -12,7 +12,8 @@ public class Word extends Token {
             ge      = new Word(">=",    Tag.GE     ),
             minus   = new Word("minus", Tag.MINUS  ),
             True    = new Word("true",  Tag.TRUE   ),
-            False   = new Word("false", Tag.FALSE  );
+            False   = new Word("false", Tag.FALSE  ),
+            temp    = new Word("temp",  Tag.TEMP   );
 
     Word(String value, String tag) {
         super(tag);

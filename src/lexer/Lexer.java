@@ -1,6 +1,5 @@
 package lexer;
 
-import javax.swing.*;
 import java.io.*;
 import java.util.Hashtable;
 
@@ -28,6 +27,7 @@ public class Lexer {
         save(Type.Bool);
         save(Type.Float);
         save(Type.Int);
+        save(Type.Char);
         save(Word.True);
         save(Word.False);
         save(new Word("if", Tag.IF));
@@ -41,10 +41,9 @@ public class Lexer {
         words.put(w.value, w);
     }
 
-    private char readChar() throws IOException {
+    private void readChar() throws IOException {
         current_c = next_c;
         next_c = (char) reader.read();
-        return current_c;
     }
 
     private boolean readChar(char c) throws IOException {
@@ -91,6 +90,7 @@ public class Lexer {
             boolean isInt = true;
             do {
                 buffer.append(current_c);
+                if (Character.isLetter(next_c)) break;
                 if (readChar('.')) {
                     buffer.append('.');
                     isInt = false;
@@ -101,7 +101,7 @@ public class Lexer {
                 }
                 readChar();
             } while (Character.isDigit(current_c));
-            //return null; 运行到这里表示错误的词法单元
+            throw new Error("在第" + this.lines + "行附近可能有错，检测到出错的词法单元：“" + current_c + "” \n");    // 运行到这里表示错误的词法单元
         }
 
         if (Character.isLetter(current_c)) {
@@ -113,7 +113,9 @@ public class Lexer {
             String s = buffer.toString();
             Word w = words.get(s);
             if (w != null) return w;
-            return new Word(s, Tag.ID);
+            w = new Word(s, Tag.ID);
+            words.put(s, w);
+            return w;
         }
 
         if (current_c == (char) -1) return null;
