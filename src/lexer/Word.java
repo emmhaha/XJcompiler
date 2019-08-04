@@ -2,7 +2,7 @@ package lexer;
 
 public class Word extends Token {
 
-    public String value;
+    String value;
     public static final Word
             and     = new Word("&&",    Tag.AND    ),
             or      = new Word("||",    Tag.OR     ),

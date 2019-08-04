@@ -18,7 +18,6 @@ public class FunctionSet {
     private Unit unit_4;
     private Token symbol_top;
     private Token symbol_2;
-    private Token symbol_3;
 
     public FunctionSet(Parser parser, String firstLex) {
         this.top = parser.symbolStack.size()-1;
@@ -32,7 +31,6 @@ public class FunctionSet {
         this.unit_4 = semanticStack.get(top - 3);
         this.symbol_top = parser.symbolStack.get(top);
         if (top - 1 >= 0) this.symbol_2 = parser.symbolStack.get(top - 1);
-        if (top - 2 >= 0) this.symbol_3 = parser.symbolStack.get(top - 2);
     }
 
     public void program() {
@@ -41,7 +39,7 @@ public class FunctionSet {
 
     public void block() {
         Unit unit = new Unit();
-        unit.addCodes(unit_2.codes);
+        if (unit_2 != null) unit.addCodes(unit_2.codes);
         semanticStack.put(top - 3, unit);
     }
 
@@ -51,6 +49,7 @@ public class FunctionSet {
             //unit.isCode = false;
             semanticStack.put(top - 2, unit);
         }
+        else semanticStack.put(top, new Unit());
     }
 
     public void decl() {
@@ -77,12 +76,12 @@ public class FunctionSet {
 
     public void stmts() {
         if (firstLex.equals("stmts")) {
-            //if ((unit_2 != null && unit_2.codes.contains("break")) || unit_top.codes.contains("break")) parser.error("break语句只能出现在循环语句内！");
             Unit unit = new Unit();
             if (unit_2 != null) unit.addCodes(unit_2.codes);
             unit.addCodes(unit_top.codes);
             semanticStack.put(top - 1, unit);
         }
+        else semanticStack.put(top, new Unit());
     }
 
     public void stmt() {
@@ -123,6 +122,7 @@ public class FunctionSet {
                 newLabel = Unit.newLabel();
                 unit = new Unit();
                 if (symbol_2.tag.equals(")")) {
+                    if (Type.isNumeric(unit_3.getType())) parser.error("类型错误：IF语句括号里应该为bool类型");
                     unit.addCodes(unit_3.codes);
                     unit.addCode("if " + unit_3.currentTemp + " is false goto " + newLabel);
                     unit.addCodes(unit_top.codes);
@@ -131,6 +131,7 @@ public class FunctionSet {
                 }
                 else {
                     String newLabel2 = Unit.newLabel();
+                    if (Type.isNumeric(semanticStack.get(top - 4).getType())) parser.error("类型错误：IF语句括号里应该为bool类型");
                     unit.addCodes(semanticStack.get(top - 4).codes);
                     unit.addCode("if " + semanticStack.get(top - 4).currentTemp + " is false goto " + newLabel);
                     unit.addCodes(unit_3.codes);
@@ -147,8 +148,12 @@ public class FunctionSet {
                 unit = new Unit();
                 unit.addCode(newLabel + ":");
                 unit.addCodes(unit_3.codes);
+
                 if (!unit_3.isCode && ((Expr) unit_3).token.tag.equals(Tag.FALSE)) unit.addCode("goto " + newLabel2);
                 else if (!unit_3.isCode && ((Expr) unit_3).token.tag.equals(Tag.TRUE)) {}
+                else if (!unit_3.isCode && ((Expr) unit_3).token.tag.equals(Tag.IMM)) {
+                    parser.error("类型错误：循环语句括号里应该为bool类型");
+                }
                 else unit.addCode("if " + unit_3.currentTemp + " is false goto " + newLabel2);
 
                 if (unit_top.codes.contains("break")) {
@@ -177,6 +182,9 @@ public class FunctionSet {
 
                 if (!unit_3.isCode && ((Expr) unit_3).token.tag.equals(Tag.FALSE)) {}
                 else if (!unit_3.isCode && ((Expr) unit_3).token.tag.equals(Tag.TRUE)) unit.addCode("goto " + newLabel);
+                else if (!unit_3.isCode && ((Expr) unit_3).token.tag.equals(Tag.IMM)) {
+                    parser.error("类型错误：循环语句括号里应该为bool类型");
+                }
                 else unit.addCode("if " + unit_3.currentTemp + " goto " + newLabel);
 
                 if (hasBreak) unit.addCode(newLabel2 + ":");
@@ -246,7 +254,6 @@ public class FunctionSet {
     }
 
     private void subFunction(String name, Type newType) {
-
         if (!firstLex.equals(name)) {
             Temp newTemp = new Temp(newType);
             if (unit_top.currentTemp != null && unit_3.currentTemp != null) {
@@ -298,12 +305,11 @@ public class FunctionSet {
     }
 
     public void factor() {
-        if (firstLex.equals("(")) semanticStack.put(top - 2, unit_2);
-        else if (firstLex.equals("loc")) {
-
+        if (!firstLex.equals("loc")) {
+            if (firstLex.equals("(")) semanticStack.put(top - 2, unit_2);
+            else if (symbol_top.tag.equals(Tag.TRUE)) semanticStack.put(top, Constant.True);
+            else if (symbol_top.tag.equals(Tag.FALSE)) semanticStack.put(top, Constant.False);
+            else semanticStack.put(top, new Constant(new Imm<>(symbol_top)));
         }
-        else if (symbol_top.tag.equals(Tag.TRUE)) semanticStack.put(top, Constant.True);
-        else if (symbol_top.tag.equals(Tag.FALSE)) semanticStack.put(top, Constant.False);
-        else semanticStack.put(top, new Constant(new Imm<>(symbol_top)));
     }
 }

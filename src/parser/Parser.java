@@ -11,6 +11,7 @@ public class Parser {
 
     private Lexer lexer;
     private Token token;
+    private StringBuilder stateBuffer = new StringBuilder();
     private LinkedList<Integer> stateStack = new LinkedList<>();
     private ArrayList<ItemSet> stateSet = new ArrayList<>();
     private ItemSet grammar = new ItemSet();
@@ -24,13 +25,7 @@ public class Parser {
     public Parser(Lexer lexer) throws IOException, Error {
         this.lexer = lexer;
         init();
-        showState();
-        showTable(9);
         analyze();
-
-//        while ((token = lexer.getToken()) != null) {
-//            token.show("  ");
-//        }
     }
 
     private void init() {
@@ -54,15 +49,6 @@ public class Parser {
                 "factor -> REAL", "factor -> TRUE", "factor -> FALSE"
         };
 
-//        String[] G = {
-//                "e -> e + t", "e -> t", "t -> t * f", "t -> f",
-//                "f -> ( e )", "f -> NUM", "f -> NULL"
-//        };
-
-//        String[] G = {
-//                "s -> c c", "c -> C c", "c -> D"
-//        };
-
         for (int i = 0; i < G.length; i++) {
             String[] g = G[i].split(" -> ");
             Item item = new Item(g[0], g[1], null, i + 1);
@@ -81,14 +67,6 @@ public class Parser {
         return token = lexer.getToken();
     }
 
-    private boolean match(String tag) throws IOException {
-        if (token != null && tag.equals(this.token.tag)) {
-            move();
-            return true;
-        }
-        return false;
-    }
-
     public void error(String message) {
         String lex = "EOF";
         if (token != null ) lex = token.toString();
@@ -100,7 +78,7 @@ public class Parser {
         Token a = move();
         while (true) {
             if (a == null) a = new Token("$");
-            showState(a.tag, 6);
+            saveState(a.tag);
             int topState = stateStack.getLast();
             String action = getTable(Action, topState, a.tag);
 
@@ -137,12 +115,6 @@ public class Parser {
             }
             else if (action.equals("acc")) break;
         }
-        System.out.println("中间代码：");
-        Unit unit = semanticStack.get(0);
-        unit.codes.forEach(s -> {
-            if (s.charAt(0) != 'L') System.out.println("\t" + s);
-            else System.out.println(s);
-        });
 //        semanticStack.forEach((integer, unit) ->
 //            System.out.println(integer + " " + unit.codes)
 //        );
@@ -204,18 +176,19 @@ public class Parser {
         }
     }
 
-    private void showState(String tag, int width) {
-        printSpace(width);
+    private void saveState(String tag) {
+        int width = 6;
+        stateBuffer.append(getSpace(width));
         for (Token s : symbolStack) {
-            System.out.print(s.tag);
-            printSpace(width - s.tag.length());
+            stateBuffer.append(s.tag);
+            stateBuffer.append(getSpace(width - s.tag.length()));
         }
-        System.out.printf("  '%s'\n", tag);
+        stateBuffer.append("  '").append(tag).append("'\n");
         for (int i : stateStack) {
-            System.out.print(i);
-            printSpace(width - String.valueOf(i).length());
+            stateBuffer.append(i);
+            stateBuffer.append(getSpace(width - String.valueOf(i).length()));
         }
-        System.out.print("\n\n");
+        stateBuffer.append("\n\n");
     }
 
     private void setGoto (int i, String s, String value) {
@@ -345,7 +318,20 @@ public class Parser {
         return true;
     }
 
-    public void showState() {
+    public void showInterCode() {
+        System.out.println("中间代码：");
+        Unit unit = semanticStack.get(0);
+        unit.codes.forEach(s -> {
+            if (s.charAt(0) != 'L') System.out.println("\t" + s);
+            else System.out.println(s);
+        });
+    }
+
+    public void showStack() {
+        System.out.println(stateBuffer.toString());
+    }
+
+    public void showStateSet() {
         System.out.print("\n\n状态集：\n");
         for (ItemSet i : stateSet) {
             i.show();
@@ -400,6 +386,14 @@ public class Parser {
             }
         }
         System.out.print("\n\n");
+    }
+
+    private String getSpace(int num) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < num; i++) {
+            builder.append(" ");
+        }
+        return builder.toString();
     }
 
     private void printSpace(int num) {

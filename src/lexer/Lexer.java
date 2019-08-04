@@ -122,4 +122,11 @@ public class Lexer {
         return new Token(current_c + "");     // 其他所有字符
     }
 
+    public void show(String end) throws IOException {
+        Token token;
+        while ((token = getToken()) != null) {
+            token.show(end);
+        }
+    }
+
 }

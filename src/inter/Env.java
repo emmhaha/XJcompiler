@@ -18,9 +18,10 @@ public class Env {
 
     Id get(Word w) {
         Id id = hashtable.get(w);
+        Env env = this;
         while (id == null) {
-            if (nextEnv == null) break;
-            Env env = nextEnv;
+            if (env.nextEnv == null) break;
+            env = env.nextEnv;
             id = env.hashtable.get(w);
         }
         return id;

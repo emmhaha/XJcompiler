@@ -82,7 +82,7 @@ public class ItemSet implements Iterable<Item> {
         return new ArrayList<>(itemSet);
     }
 
-    public void show() {
+    void show() {
         System.out.println(ID + ":");
         for (Item item : itemSet) {
             System.out.println("\t" + item.toString());
