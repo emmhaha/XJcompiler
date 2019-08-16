@@ -90,6 +90,8 @@ public class FunctionSet {
         switch (firstLex) {
             case "loc":
                 unit = new Unit();
+                if (Type.isInteger(unit_2.getType()) != Type.isInteger(unit_4.getType()) &&
+                        !unit_2.getType().equals(unit_4.getType())) parser.error("类型错误：请检查变量声明类型与赋值的数值类型是否符合");
                 if (unit_2.isCode) {          // bool是算式
                     if (unit_4.isArray) {      // loc是数组
                         String s = unit_4.codes.get(unit_4.codes.size() - 1);

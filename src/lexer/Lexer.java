@@ -11,17 +11,13 @@ public class Lexer {
     private Reader reader;
     private Hashtable<String, Word> words = new Hashtable<>();
 
-    public Lexer() throws IOException {
-        String path = "D:\\MY\\Projects\\IDEA\\XJcompiler\\out\\artifacts\\XJcompiler_jar\\qwe.txt";
+    public Lexer(String path) throws IOException {
         init(path);
     }
 
     private void init(String path) throws IOException{
         File file = new File(path);
-        if (!file.exists()) {
-            System.out.println("文件不存在！请检查路径是否正确");
-            return;
-        }
+        if (!file.exists()) throw new Error("文件不存在！请检查路径是否正确 " + file.getAbsolutePath());
         reader = new InputStreamReader(new FileInputStream(file));
 
         save(Type.Bool);
@@ -87,21 +83,21 @@ public class Lexer {
         }
 
         if (Character.isDigit(current_c)) {
-            boolean isInt = true;
+            boolean isInteger = true;
             do {
                 buffer.append(current_c);
                 if (Character.isLetter(next_c)) break;
                 if (readChar('.')) {
                     buffer.append('.');
-                    isInt = false;
+                    isInteger = false;
                 }
                 else if (!Character.isDigit(next_c)) {
-                    if (isInt) return new Imm<>(Integer.parseInt(buffer.toString()));
+                    if (isInteger) return new Imm<>(Integer.parseInt(buffer.toString()));
                     else return new Imm<>(Float.parseFloat(buffer.toString()));
                 }
                 readChar();
             } while (Character.isDigit(current_c));
-            throw new Error("在第" + this.lines + "行附近可能有错，检测到出错的词法单元：“" + current_c + "” \n");    // 运行到这里表示错误的词法单元
+            throw new Error("在第" + this.lines + "行附近可能有错，检测到出错的词法单元：“" + current_c + "” \n");
         }
 
         if (Character.isLetter(current_c)) {

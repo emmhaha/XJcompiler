@@ -8,11 +8,19 @@ public class Imm<T> extends Token {
     public Imm(T num) {
         super(Tag.IMM);
         this.num = num;
-        if (isInt()) type = Type.Int;
-        else type = Type.Float;
+        type = getType();
+        if (type == null) {
+            if (isInteger()) type = Type.Int;
+            else type = Type.Float;
+        }
     }
 
-    private boolean isInt() {
+    private Type getType() {
+        if (num instanceof Imm) return ((Imm) num).type;
+        else return null;
+    }
+
+    private boolean isInteger() {
         return num instanceof Integer;
     }
 

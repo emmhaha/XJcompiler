@@ -1,8 +1,19 @@
 {
     int i;
-    float f;
-    if (i == 0) {
-        printf("23%d", i);
+    int j;
+    i = 3;
+    j = 2;
+    while(true) {
+        int f;
+        f = 3;
+        if (i > 3) i = 3;
+        if (i == j) {
+            i = 2;
+            j = i * 6 + 8 / 2;
+        }
+        if (i == f) {
+            f = 2;
+            j = i * 6 + 8 / f;
+        }
     }
-
 }

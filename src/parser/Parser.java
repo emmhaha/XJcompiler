@@ -115,9 +115,6 @@ public class Parser {
             }
             else if (action.equals("acc")) break;
         }
-//        semanticStack.forEach((integer, unit) ->
-//            System.out.println(integer + " " + unit.codes)
-//        );
     }
 
     private void semanticAnalysis(Item item) {

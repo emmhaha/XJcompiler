@@ -18,6 +18,10 @@ public class Type extends Word {
         return type == Type.Float || type == Type.Int || type == Type.Char;
     }
 
+    public static boolean isInteger(Type type) {
+        return type == Type.Int || type == Type.Char;
+    }
+
     public static Type max(Type type1, Type type2) {
         if (!isNumeric(type1) || !isNumeric(type2)) return null;
         else if (type1 == Type.Float || type2 == Type.Float) return Type.Float;
