@@ -9,7 +9,7 @@ public class Lexer {
     private char current_c;
     private char next_c = ' ';
     private Reader reader;
-    private Hashtable<String, Word> words = new Hashtable<>();
+    private final Hashtable<String, Word> words = new Hashtable<>();
 
     public Lexer(String path) throws IOException {
         init(path);

@@ -8,7 +8,7 @@ import java.util.Iterator;
 
 public class ItemSet implements Iterable<Item> {
 
-    private HashSet<Item> itemSet = new HashSet<>();
+    private final HashSet<Item> itemSet = new HashSet<>();
     int ID = 0;
 
     ItemSet() {}
@@ -51,10 +51,6 @@ public class ItemSet implements Iterable<Item> {
             if (j.key.equals(item.key) && j.value.equals(item.value)) return j;
         }
         return null;
-    }
-
-    boolean contains(Item item) {
-        return itemSet.contains(item);
     }
 
     public int hashCode(){

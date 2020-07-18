@@ -7,16 +7,16 @@ import java.util.Hashtable;
 
 public class FunctionSet {
     private static int used = 0;
-    private String firstLex;
-    private Hashtable<Integer, Unit> semanticStack;
-    private Parser parser;
-    private Env env;
-    private int top;
-    private Unit unit_top;
-    private Unit unit_2;
-    private Unit unit_3;
-    private Unit unit_4;
-    private Token symbol_top;
+    private final String firstLex;
+    private final Hashtable<Integer, Unit> semanticStack;
+    private final Parser parser;
+    private final Env env;
+    private final int top;
+    private final Unit unit_top;
+    private final Unit unit_2;
+    private final Unit unit_3;
+    private final Unit unit_4;
+    private final Token symbol_top;
     private Token symbol_2;
 
     public FunctionSet(Parser parser, String firstLex) {
@@ -151,12 +151,13 @@ public class FunctionSet {
                 unit.addCode(newLabel + ":");
                 unit.addCodes(unit_3.codes);
 
-                if (!unit_3.isCode && ((Expr) unit_3).token.tag.equals(Tag.FALSE)) unit.addCode("goto " + newLabel2);
-                else if (!unit_3.isCode && ((Expr) unit_3).token.tag.equals(Tag.TRUE)) {}
-                else if (!unit_3.isCode && ((Expr) unit_3).token.tag.equals(Tag.IMM)) {
-                    parser.error("类型错误：循环语句括号里应该为bool类型");
+                if (!(!unit_3.isCode && ((Expr) unit_3).token.tag.equals(Tag.TRUE))) {
+                    if (!unit_3.isCode && ((Expr) unit_3).token.tag.equals(Tag.FALSE)) unit.addCode("goto " + newLabel2);
+                    else if (!unit_3.isCode && ((Expr) unit_3).token.tag.equals(Tag.IMM)) {
+                        parser.error("类型错误：循环语句括号里应该为bool类型");
+                    }
+                    else unit.addCode("if " + unit_3.currentTemp + " is false goto " + newLabel2);
                 }
-                else unit.addCode("if " + unit_3.currentTemp + " is false goto " + newLabel2);
 
                 if (unit_top.codes.contains("break")) {
                     int i = unit_top.codes.indexOf("break");
@@ -182,12 +183,13 @@ public class FunctionSet {
                 unit.addCodes(semanticStack.get(top - 5).codes);
                 unit.addCodes(unit_3.codes);
 
-                if (!unit_3.isCode && ((Expr) unit_3).token.tag.equals(Tag.FALSE)) {}
-                else if (!unit_3.isCode && ((Expr) unit_3).token.tag.equals(Tag.TRUE)) unit.addCode("goto " + newLabel);
-                else if (!unit_3.isCode && ((Expr) unit_3).token.tag.equals(Tag.IMM)) {
-                    parser.error("类型错误：循环语句括号里应该为bool类型");
+                if (!(!unit_3.isCode && ((Expr) unit_3).token.tag.equals(Tag.FALSE))) {
+                    if (!unit_3.isCode && ((Expr) unit_3).token.tag.equals(Tag.TRUE)) unit.addCode("goto " + newLabel);
+                    else if (!unit_3.isCode && ((Expr) unit_3).token.tag.equals(Tag.IMM)) {
+                        parser.error("类型错误：循环语句括号里应该为bool类型");
+                    }
+                    else unit.addCode("if " + unit_3.currentTemp + " goto " + newLabel);
                 }
-                else unit.addCode("if " + unit_3.currentTemp + " goto " + newLabel);
 
                 if (hasBreak) unit.addCode(newLabel2 + ":");
                 semanticStack.put(top - 6, unit);

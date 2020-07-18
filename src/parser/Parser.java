@@ -9,15 +9,15 @@ import java.util.*;
 
 public class Parser {
 
-    private Lexer lexer;
+    private final Lexer lexer;
     private Token token;
-    private StringBuilder stateBuffer = new StringBuilder();
-    private LinkedList<Integer> stateStack = new LinkedList<>();
-    private ArrayList<ItemSet> stateSet = new ArrayList<>();
-    private ItemSet grammar = new ItemSet();
-    private ArrayList<String> symbols = new ArrayList<>();
-    private Hashtable<Integer, Hashtable<String, String>> Action = new Hashtable<>();
-    private Hashtable<Integer, Hashtable<String, String>> Goto = new Hashtable<>();
+    private final StringBuilder stateBuffer = new StringBuilder();
+    private final LinkedList<Integer> stateStack = new LinkedList<>();
+    private final ArrayList<ItemSet> stateSet = new ArrayList<>();
+    private final ItemSet grammar = new ItemSet();
+    private final ArrayList<String> symbols = new ArrayList<>();
+    private final Hashtable<Integer, Hashtable<String, String>> Action = new Hashtable<>();
+    private final Hashtable<Integer, Hashtable<String, String>> Goto = new Hashtable<>();
     public LinkedList<Token> symbolStack = new LinkedList<>();
     public Hashtable<Integer, Unit> semanticStack = new Hashtable<>();
     public Env env = new Env(null);
@@ -354,8 +354,8 @@ public class Parser {
         for (int i = 0; i < stateSet.size(); i++) {
             System.out.print("\n" + i);
             printSpace(width - String.valueOf(i).length() - 1);
-            Hashtable row_action = Action.get(i);
-            Hashtable row_goto = Goto.get(i);
+            Hashtable<String, String> row_action = Action.get(i);
+            Hashtable<String, String> row_goto = Goto.get(i);
             if (row_action != null) {
                 for (String s : symbols) {
                     if (row_action.get(s) == null) printSpace(width);
@@ -365,12 +365,11 @@ public class Parser {
                         printSpace(width - val.length());
                     }
                 }
-                System.out.print("|   ");
             }
             else {
                 printSpace(symbols.size() * width);
-                System.out.print("|   ");
             }
+            System.out.print("|   ");
             if (row_goto != null) {
                 for (String s : symbols_goto) {
                     if (row_goto.get(s) == null) printSpace(width);

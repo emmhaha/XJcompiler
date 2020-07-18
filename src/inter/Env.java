@@ -5,7 +5,7 @@ import lexer.Word;
 import java.util.Hashtable;
 
 public class Env {
-    private Hashtable<Word, Id> hashtable = new Hashtable<>();
+    private final Hashtable<Word, Id> hashtable = new Hashtable<>();
     public Env nextEnv;
 
     public Env(Env oldEnv) {

@@ -2,7 +2,7 @@ package lexer;
 
 public class Imm<T> extends Token {
 
-    private T num;
+    private final T num;
     public Type type;
 
     public Imm(T num) {

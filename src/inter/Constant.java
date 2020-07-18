@@ -10,7 +10,7 @@ class Constant extends Expr {
             True = new Constant(Word.True, Type.Bool),
             False = new Constant(Word.False, Type.Bool);
 
-    Constant(Imm imm) {
+    Constant(Imm<Token> imm) {
         super(imm, imm.type, false);
     }
 
