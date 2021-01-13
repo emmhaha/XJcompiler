@@ -1,5 +1,7 @@
 package parser;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -9,6 +11,8 @@ public class Item {
     ArrayList<String> value = new ArrayList<>();
     String f_symbol;
     int id = 0;
+
+    Item() {}
 
     Item(Item item) {
         this.key = item.key;
@@ -26,14 +30,50 @@ public class Item {
         setID(id);
     }
 
+    @JSONField(name = "key")
+    public String getKey() {
+        return key;
+    }
+
+    @JSONField(name = "f_symbol")
+    public String getF_symbol() {
+        return f_symbol;
+    }
+
+    @JSONField(name = "value")
+    public ArrayList<String> getValue() {
+        return value;
+    }
+
+    @JSONField(name = "f_symbol")
+    public void setF_symbol(String f_symbol) {
+        this.f_symbol = f_symbol;
+    }
+
+    @JSONField(name = "key")
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+    @JSONField(name = "value")
+    public void setValue(ArrayList<String> value) {
+        this.value = value;
+    }
+
+    @JSONField(name = "id")
+    public int getId() {
+        return id;
+    }
+
+    @JSONField(name = "id")
+    private void setID(int id) {
+        this.id = id;
+    }
+
     private void init(String key, String value, String f_symbol) {
         this.key = key;
         this.f_symbol = f_symbol;
         this.value.addAll(Arrays.asList(value.split(" ")));
-    }
-
-    private void setID(int id) {
-        this.id = id;
     }
 
     private int getPoint() {

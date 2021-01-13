@@ -21,6 +21,14 @@ public class ItemSet implements Iterable<Item> {
         this.ID = id;
     }
 
+    public HashSet<Item> getItemSet() {
+        return itemSet;
+    }
+
+    public int getID() {
+        return ID;
+    }
+
     void add(Item item) {
         itemSet.add(item);
     }
@@ -79,10 +87,17 @@ public class ItemSet implements Iterable<Item> {
     }
 
     void show() {
-        System.out.println(ID + ":");
+        System.out.println(this.toString());
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(ID).append(":\n");
         for (Item item : itemSet) {
-            System.out.println("\t" + item.toString());
+            builder.append("\t").append(item.toString()).append('\n');
         }
+        return builder.toString();
     }
 
     @NotNull

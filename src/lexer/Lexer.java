@@ -1,24 +1,25 @@
 package lexer;
 
+import utils.Utils;
+
 import java.io.*;
 import java.util.Hashtable;
 
 public class Lexer {
 
     public int lines = 1;
+    //public static String cachePath;
     private char current_c;
     private char next_c = ' ';
     private Reader reader;
     private final Hashtable<String, Word> words = new Hashtable<>();
 
-    public Lexer(String path) throws IOException {
-        init(path);
+    public Lexer(String srcCode) {
+        init(srcCode);
     }
 
-    private void init(String path) throws IOException{
-        File file = new File(path);
-        if (!file.exists()) throw new Error("文件不存在！请检查路径是否正确 " + file.getAbsolutePath());
-        reader = new InputStreamReader(new FileInputStream(file));
+    private void init(String srcCode) {
+        reader = new StringReader(srcCode);
 
         save(Type.Bool);
         save(Type.Float);
@@ -37,18 +38,22 @@ public class Lexer {
         words.put(w.value, w);
     }
 
-    private void readChar() throws IOException {
-        current_c = next_c;
-        next_c = (char) reader.read();
+    private void readChar() {
+        try {
+            current_c = next_c;
+            next_c = (char) reader.read();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    private boolean readChar(char c) throws IOException {
+    private boolean readChar(char c) {
         if (next_c != c) return false;
         readChar();
         return true;
     }
 
-    public Token getToken() throws IOException {
+    public Token getToken() {
         StringBuilder buffer = new StringBuilder();
         boolean next_line = false;
         do {                                           // 去除空白，每次调用这个函数时，current_c指向上一个词法单元的末尾
@@ -118,11 +123,16 @@ public class Lexer {
         return new Token(current_c + "");     // 其他所有字符
     }
 
-    public void show(String end) throws IOException {
-        Token token;
-        while ((token = getToken()) != null) {
-            token.show(end);
-        }
+    public void show(String end) {
+        System.out.println(this.toString(end));
     }
 
+    public String toString(String end) {
+        Token token;
+        StringBuilder s = new StringBuilder();
+        while ((token = getToken()) != null) {
+            s.append(token.toString()).append(end);
+        }
+        return s.toString();
+    }
 }
