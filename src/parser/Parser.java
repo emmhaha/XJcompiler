@@ -7,6 +7,7 @@ import inter.Env;
 import inter.FunctionSet;
 import inter.Unit;
 import lexer.Lexer;
+import lexer.Temp;
 import lexer.Token;
 import utils.Utils;
 
@@ -17,10 +18,10 @@ import java.util.LinkedList;
 
 public class Parser {
 
-    private final Lexer lexer;
+    private Lexer lexer;
     private Token token;
-    private final StringBuilder stateBuffer = new StringBuilder();
-    private final LinkedList<Integer> stateStack = new LinkedList<>();
+    private StringBuilder stateBuffer = new StringBuilder();
+    private LinkedList<Integer> stateStack = new LinkedList<>();
     private ArrayList<ItemSet> stateSet;
     private final ItemSet grammar = new ItemSet();
     private final ArrayList<String> symbols = new ArrayList<>();
@@ -42,6 +43,18 @@ public class Parser {
     public Parser(Lexer lexer, boolean enable_cache) {
         this.lexer = lexer;
         this.enable_cache = enable_cache;
+    }
+
+    public void setLexer(Lexer lexer) {
+        semanticStack = new Hashtable<>();
+        stateBuffer = new StringBuilder();
+        symbolStack = new LinkedList<>();
+        env = new Env(null);
+        stateStack = new LinkedList<>();
+        this.isAnalyze = false;
+        this.lexer = lexer;
+        Unit.initLabel();
+        Temp.init();
     }
 
     public void startInit() {
@@ -96,7 +109,7 @@ public class Parser {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("缓存加载失败！");
+            System.err.println("缓存加载失败！");
             cacheLoadError = true;
         }
 

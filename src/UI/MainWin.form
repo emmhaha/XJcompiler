@@ -50,22 +50,93 @@
           <text value="Inter"/>
         </properties>
       </component>
-      <scrollpane id="78672">
+      <tabbedpane id="f7838" binding="tabbedPane">
         <constraints>
-          <grid row="0" column="0" row-span="1" col-span="5" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="0" column="0" row-span="1" col-span="5" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+            <preferred-size width="200" height="200"/>
+          </grid>
         </constraints>
         <properties/>
         <border type="none"/>
         <children>
-          <component id="4b9f4" class="javax.swing.JTextArea" binding="textArea">
-            <constraints/>
+          <splitpane id="f08fc" binding="splitPane">
+            <constraints>
+              <tabbedpane title="无标题"/>
+            </constraints>
             <properties>
-              <font name="Consolas"/>
-              <lineWrap value="false"/>
+              <dividerLocation value="250"/>
+              <dividerSize value="5"/>
+              <orientation value="0"/>
             </properties>
-          </component>
+            <border type="none"/>
+            <children>
+              <scrollpane id="870b3" binding="scrollPane">
+                <constraints>
+                  <splitpane position="left"/>
+                </constraints>
+                <properties>
+                  <autoscrolls value="false"/>
+                  <doubleBuffered value="false"/>
+                  <focusCycleRoot value="false"/>
+                  <inheritsPopupMenu value="false"/>
+                </properties>
+                <border type="none"/>
+                <children>
+                  <grid id="85b8e" layout-manager="BorderLayout" hgap="0" vgap="0">
+                    <constraints/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <component id="57f2d" class="javax.swing.JTextPane" binding="textPane">
+                        <constraints border-constraint="Center"/>
+                        <properties>
+                          <font name="Consolas"/>
+                        </properties>
+                      </component>
+                    </children>
+                  </grid>
+                </children>
+              </scrollpane>
+              <grid id="13812" binding="bottomPanel" layout-manager="GridLayoutManager" row-count="2" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
+                <constraints>
+                  <splitpane position="right"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="896d7" class="javax.swing.JLabel" binding="closeButton">
+                    <constraints>
+                      <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value=""/>
+                    </properties>
+                  </component>
+                  <hspacer id="d3428">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                  </hspacer>
+                  <scrollpane id="d69ac">
+                    <constraints>
+                      <grid row="1" column="0" row-span="1" col-span="3" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <component id="3256d" class="javax.swing.JTextArea" binding="textArea1" default-binding="true">
+                        <constraints/>
+                        <properties/>
+                      </component>
+                    </children>
+                  </scrollpane>
+                </children>
+              </grid>
+            </children>
+          </splitpane>
         </children>
-      </scrollpane>
+      </tabbedpane>
     </children>
   </grid>
 </form>

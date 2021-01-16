@@ -8,7 +8,6 @@ import java.util.Hashtable;
 public class Lexer {
 
     public int lines = 1;
-    //public static String cachePath;
     private char current_c;
     private char next_c = ' ';
     private Reader reader;

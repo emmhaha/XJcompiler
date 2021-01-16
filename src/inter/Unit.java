@@ -48,4 +48,8 @@ public class Unit {
     static String newLabel() {
         return "L" + ++label;
     }
+
+    public static void initLabel() {
+        label = 0;
+    }
 }
