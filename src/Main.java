@@ -22,6 +22,7 @@ public class Main {
 
         //new TestUI();
         new MainWin(800, 600, srcPath, cachePath);
+
 //        Parser parser = new Parser(null, false);
 //        parser.setLexer(new Lexer(Utils.readText(srcPath)));
 //        parser.startInit();

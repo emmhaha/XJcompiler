@@ -1,6 +1,7 @@
 package parser;
 
 import UI.MainWin;
+import UI.ProgressWin;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import inter.Env;
@@ -31,6 +32,7 @@ public class Parser {
     public LinkedList<Token> symbolStack = new LinkedList<>();
     public Hashtable<Integer, Unit> semanticStack = new Hashtable<>();
     public Env env = new Env(null);
+    public ProgressWin progressWin;
     private boolean enable_cache = false;
     private boolean isInit = false;
     private boolean isAnalyze = false;
@@ -53,6 +55,7 @@ public class Parser {
         stateStack = new LinkedList<>();
         this.isAnalyze = false;
         this.lexer = lexer;
+
         Unit.initLabel();
         Temp.init();
     }
@@ -63,10 +66,22 @@ public class Parser {
         isInit = true;
     }
 
+    public boolean isInit() {
+        return isInit;
+    }
+
     public void startAnalyze() {
         if (isAnalyze) return;
         analyze();
         isAnalyze = true;
+    }
+
+    public void setProgressWin(ProgressWin progressWin) {
+        this.progressWin = progressWin;
+    }
+
+    private void setProgress(int val) {   // 设置进度条的值
+        if (progressWin != null) progressWin.setValue(val);
     }
 
     private void init() {    // 语法分析的初始化及前期准备
@@ -101,11 +116,15 @@ public class Parser {
                 });
             }
             first_item = G[0].split(" -> ");
+            setProgress(10);
 
             if (enable_cache) {
                 Action = loadJson(MainWin.cachePath + "action.json", new TypeReference<Hashtable<Integer, Hashtable<String, String>>>(){});
+                setProgress(30);
                 Goto = loadJson(MainWin.cachePath + "goto.json", new TypeReference<Hashtable<Integer, Hashtable<String, String>>>(){});
+                setProgress(50);
                 stateSet = loadJson(MainWin.cachePath + "state set.json", new TypeReference<ArrayList<ItemSet>>(){});
+                setProgress(100);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -119,11 +138,13 @@ public class Parser {
         stateSet = new ArrayList<>();
 
         items(new Item(first_item[0] + "'", ". " + first_item[0], "$"));
+        setProgress(90);
 
         saveAsJson(MainWin.cachePath + "action.json", Action);
         saveAsJson(MainWin.cachePath + "goto.json", Goto);
         saveAsJson(MainWin.cachePath + "state set.json", stateSet);
         cacheLoadError = false;
+        setProgress(100);
     }
 
     private void saveAsJson(String path, Object obj) {
@@ -305,6 +326,7 @@ public class Parser {
                 }
             }
         }
+        setProgress(70);
         for(ItemSet is : stateSet) {    // ACTION表构造条件第二、三条
             for (Item i : is) {
                 if (i.equals(initial_item.movePoint())) setAction(is.ID, i.f_symbol, "acc");

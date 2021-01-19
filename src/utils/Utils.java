@@ -34,4 +34,10 @@ public class Utils {
             e.printStackTrace();
         }
     }
+
+    public static String getFileName(String path) {
+        File file = new File(path);
+        if (file.isFile()) return file.getName();
+        return null;
+    }
 }
