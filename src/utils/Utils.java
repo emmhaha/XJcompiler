@@ -40,4 +40,12 @@ public class Utils {
         if (file.isFile()) return file.getName();
         return null;
     }
+
+    public static String getSpace(int num) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < num; i++) {
+            builder.append(" ");
+        }
+        return builder.toString();
+    }
 }

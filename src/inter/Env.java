@@ -5,24 +5,24 @@ import lexer.Word;
 import java.util.Hashtable;
 
 public class Env {
-    private final Hashtable<Word, Id> hashtable = new Hashtable<>();
+    private final Hashtable<String, Id> hashtable = new Hashtable<>();
     public Env nextEnv;
 
     public Env(Env oldEnv) {
         nextEnv = oldEnv;
     }
 
-    void put(Word w, Id id) {
-        hashtable.put(w, id);
+    void put(String key, Id id) {
+        hashtable.put(key, id);
     }
 
-    Id get(Word w) {
-        Id id = hashtable.get(w);
+    Id get(String key) {
+        Id id = hashtable.get(key);
         Env env = this;
         while (id == null) {
             if (env.nextEnv == null) break;
             env = env.nextEnv;
-            id = env.hashtable.get(w);
+            id = env.hashtable.get(key);
         }
         return id;
     }

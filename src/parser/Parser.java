@@ -63,6 +63,7 @@ public class Parser {
     public void startInit() {
         if (isInit) return;
         init();
+        setProgress(100, "初始化完成！");
         isInit = true;
     }
 
@@ -80,8 +81,11 @@ public class Parser {
         this.progressWin = progressWin;
     }
 
-    private void setProgress(int val) {   // 设置进度条的值
-        if (progressWin != null) progressWin.setValue(val);
+    private void setProgress(Integer val, String s) {   // 设置进度条的值和进度提示信息
+        if (progressWin != null) {
+            if (val != null)progressWin.setValue(val);
+            if (s != null) progressWin.setString(s);
+        }
     }
 
     private void init() {    // 语法分析的初始化及前期准备
@@ -116,19 +120,19 @@ public class Parser {
                 });
             }
             first_item = G[0].split(" -> ");
-            setProgress(10);
+            setProgress(10, "文法加载完成！");
 
             if (enable_cache) {
                 Action = loadJson(MainWin.cachePath + "action.json", new TypeReference<Hashtable<Integer, Hashtable<String, String>>>(){});
-                setProgress(30);
+                setProgress(30, null);
                 Goto = loadJson(MainWin.cachePath + "goto.json", new TypeReference<Hashtable<Integer, Hashtable<String, String>>>(){});
-                setProgress(50);
+                setProgress(50, null);
                 stateSet = loadJson(MainWin.cachePath + "state set.json", new TypeReference<ArrayList<ItemSet>>(){});
-                setProgress(100);
             }
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("缓存加载失败！");
+            setProgress(null, "缓存加载失败！正在重新生成符号表。。。");
             cacheLoadError = true;
         }
 
@@ -138,13 +142,13 @@ public class Parser {
         stateSet = new ArrayList<>();
 
         items(new Item(first_item[0] + "'", ". " + first_item[0], "$"));
-        setProgress(90);
+        setProgress(90, "语法分析准备完成！");
 
+        cacheLoadError = false;
+        if(!enable_cache) return;
         saveAsJson(MainWin.cachePath + "action.json", Action);
         saveAsJson(MainWin.cachePath + "goto.json", Goto);
         saveAsJson(MainWin.cachePath + "state set.json", stateSet);
-        cacheLoadError = false;
-        setProgress(100);
     }
 
     private void saveAsJson(String path, Object obj) {
@@ -161,8 +165,12 @@ public class Parser {
 
     public void error(String message) {
         String lex = "EOF";
-        if (token != null ) lex = token.toString();
-        throw new Error("在第" + lexer.lines + "行附近可能有错，检测到出错的词法单元：“" + lex + "” 。\n\t\t\t\t\t\t\t\t\t\t\t" + message);
+        int lines = lexer.lines;
+        if (token != null ) {
+            lex = token.toString();
+            lines = token.lines;
+        }
+        throw new Error("\n在第" + lines + "行附近可能有错，检测到出错的词法单元：“" + lex + "” 。\n" + message);
     }
 
     private void analyze() {   // 开始语法分析、语义分析并生成中间代码
@@ -267,15 +275,15 @@ public class Parser {
 
     private void saveState(String tag) {
         int width = 6;
-        stateBuffer.append(getSpace(width));
+        stateBuffer.append(Utils.getSpace(width));
         for (Token s : symbolStack) {
             stateBuffer.append(s.tag);
-            stateBuffer.append(getSpace(width - s.tag.length()));
+            stateBuffer.append(Utils.getSpace(width - s.tag.length()));
         }
         stateBuffer.append("  '").append(tag).append("'\n");
         for (int i : stateStack) {
             stateBuffer.append(i);
-            stateBuffer.append(getSpace(width - String.valueOf(i).length()));
+            stateBuffer.append(Utils.getSpace(width - String.valueOf(i).length()));
         }
         stateBuffer.append("\n\n");
     }
@@ -326,7 +334,7 @@ public class Parser {
                 }
             }
         }
-        setProgress(70);
+        setProgress(70, null);
         for(ItemSet is : stateSet) {    // ACTION表构造条件第二、三条
             for (Item i : is) {
                 if (i.equals(initial_item.movePoint())) setAction(is.ID, i.f_symbol, "acc");
@@ -451,64 +459,51 @@ public class Parser {
     public String tableToString(int width) {
         StringBuilder builder = new StringBuilder();
         builder.append("\n\n语法分析表：\n");
-        builder.append(getSpace(width - 1));
+        builder.append(Utils.getSpace(width - 1));
         ArrayList<String> symbols_goto = new ArrayList<>(symbols);
         if (!symbols.contains("$")) symbols.add("$");
         symbols.removeIf(s -> Character.isLowerCase(s.charAt(0)));
         symbols_goto.removeIf(s -> !Character.isLowerCase(s.charAt(0)));
         for (String s : symbols) {
             builder.append(s);
-            builder.append(getSpace(width - s.length()));
+            builder.append(Utils.getSpace(width - s.length()));
         }
         builder.append("|   ");
         for (String s : symbols_goto) {
             builder.append(s);
-            builder.append(getSpace(width - s.length()));
+            builder.append(Utils.getSpace(width - s.length()));
         }
         for (int i = 0; i < stateSet.size(); i++) {
             builder.append("\n").append(i);
-            builder.append(getSpace(width - String.valueOf(i).length() - 1));
+            builder.append(Utils.getSpace(width - String.valueOf(i).length() - 1));
             Hashtable<String, String> row_action = Action.get(i);
             Hashtable<String, String> row_goto = Goto.get(i);
             if (row_action != null) {
                 for (String s : symbols) {
-                    if (row_action.get(s) == null) builder.append(getSpace(width));
+                    if (row_action.get(s) == null) builder.append(Utils.getSpace(width));
                     else {
                         String val = row_action.get(s);
                         builder.append(val);
-                        builder.append(getSpace(width - val.length()));
+                        builder.append(Utils.getSpace(width - val.length()));
                     }
                 }
             }
             else {
-                builder.append(getSpace(symbols.size() * width));
+                builder.append(Utils.getSpace(symbols.size() * width));
             }
             builder.append("|   ");
             if (row_goto != null) {
                 for (String s : symbols_goto) {
-                    if (row_goto.get(s) == null) builder.append(getSpace(width));
+                    if (row_goto.get(s) == null) builder.append(Utils.getSpace(width));
                     else {
                         String val = row_goto.get(s);
                         builder.append(val);
-                        builder.append(getSpace(width - val.length()));
+                        builder.append(Utils.getSpace(width - val.length()));
                     }
                 }
             }
         }
         builder.append("\n\n");
         return builder.toString();
-    }
-
-    private String getSpace(int num) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < num; i++) {
-            builder.append(" ");
-        }
-        return builder.toString();
-    }
-
-    private void printSpace(int num) {
-        for (int i = 0; i < num; i++)
-            System.out.print(" ");
     }
 }

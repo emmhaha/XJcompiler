@@ -5,7 +5,6 @@ import parser.Parser;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -20,10 +19,10 @@ public class MainWin {
     private JButton interButton;
     private JTabbedPane tabbedPane;
     private JButton grammarButton;
-    private Lexer lexer;
     private final Parser parser;
-    private MySplitPane currentPage;
+    public static MySplitPane currentPage;
     public static String cachePath;
+    public static Lexer lexer = new Lexer("");
 
     public MainWin(int width, int height, String srcPath, String cachePath) {
         MainWin.cachePath = cachePath;
@@ -40,103 +39,72 @@ public class MainWin {
         frame.pack();
         frame.setVisible(true);
 
-//        try {
-//            page = Utils.readText(srcPath);
-//            currentSplitPane.getTextPane().setText(page);
-//        } catch (IOException e) {
-//            System.out.println("源码打开失败！");
-//            e.printStackTrace();
-//        }
-
         ProgressWin progressWin = new ProgressWin(frame, "初始化中。。。", false);
         parser = new Parser(null, true);
         parser.setProgressWin(progressWin);
 
         tabbedPane.addChangeListener(e -> currentPage = (MySplitPane) tabbedPane.getSelectedComponent());
 
-        grammarButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-            }
-        });
-        stateSetButton.addActionListener(e -> {
+        ActionListener buttonListener = e -> {
             if (!parser.isInit()) return;
-            if (tabbedPane.getTabCount() == 0) {
-                MySplitPane mySplitPane = new MySplitPane();
-                mySplitPane.getSplitPane().setLeftComponent(null);
-                addTab(tabbedPane, "Output:", mySplitPane);
+
+            if (Objects.equals(e.getActionCommand(), "State Set") ||
+                    Objects.equals(e.getActionCommand(), "Symbol Table") ||
+                    Objects.equals(e.getActionCommand(), "Grammar")) {
+                if (tabbedPane.getTabCount() == 0) {
+                    MySplitPane mySplitPane = new MySplitPane();
+                    mySplitPane.getSplitPane().setLeftComponent(null);
+                    addTab(tabbedPane, "Output:", mySplitPane);
+                }
+            } else {
+                if (currentPage == null || Objects.equals(tabbedPane.getTitleAt(0), "Output:")) {
+                    JOptionPane.showMessageDialog(panel1,"当前没有已打开的文件！","提示", JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
             }
+
             if (!currentPage.getBottomPanel().isVisible()) {
                 currentPage.getBottomPanel().setVisible(true);
                 currentPage.getSplitPane().setDividerLocation(250);
             }
 
-            currentPage.getTextArea().setText(parser.stateSetToString());
-            System.out.println(parser.stateSetToString());
-        });
-        symbolTableButton.addActionListener(e -> {
-            if (!parser.isInit()) return;
-            if (tabbedPane.getTabCount() == 0) {
-                MySplitPane mySplitPane = new MySplitPane();
-                mySplitPane.getSplitPane().setLeftComponent(null);
-                addTab(tabbedPane, "Output:", mySplitPane);
-            }
-            if (!currentPage.getBottomPanel().isVisible()) {
-                currentPage.getBottomPanel().setVisible(true);
-                currentPage.getSplitPane().setDividerLocation(250);
-            }
+            currentPage.getTextArea().setForeground(Color.BLACK);
+            try {
+                switch (e.getActionCommand()) {
+                    case "Grammar":
 
-            currentPage.getTextArea().setText(parser.tableToString(6));
-            System.out.println(parser.tableToString(6));
-        });
-        lexerButton.addActionListener(e -> {
-            if (!parser.isInit()) return;
-            if (currentPage == null || Objects.equals(tabbedPane.getTitleAt(0), "Output:")) {
-                JOptionPane.showMessageDialog(panel1,"当前没有已打开的文件！","提示", JOptionPane.INFORMATION_MESSAGE);
-                return;
+                        break;
+                    case "State Set":
+                        currentPage.getTextArea().setText(parser.stateSetToString());
+                        break;
+                    case "Symbol Table":
+                        currentPage.getTextArea().setText(parser.tableToString(9));
+                        break;
+                    case "Lexer":
+                        currentPage.getTextArea().setText(lexer.toString(6));
+                        break;
+                    case "Semantic Stack":
+                        parser.setLexer(new Lexer(currentPage.getTextPane().getText()));
+                        parser.startAnalyze();
+                        currentPage.getTextArea().setText(parser.stackToString());
+                        break;
+                    case "Inter":
+                        parser.setLexer(new Lexer(currentPage.getTextPane().getText()));
+                        parser.startAnalyze();
+                        currentPage.getTextArea().setText(parser.interToString());
+                }
+            } catch (Error error) {
+                currentPage.getTextArea().setForeground(Color.red);
+                currentPage.getTextArea().setText(error.toString());
             }
-            if (!currentPage.getBottomPanel().isVisible()) {
-                currentPage.getBottomPanel().setVisible(true);
-                currentPage.getSplitPane().setDividerLocation(250);
-            }
+        };
 
-            lexer = new Lexer(currentPage.getTextPane().getText());
-            currentPage.getTextArea().setText(lexer.toString("\n"));
-            System.out.println(lexer.toString("\n"));
-        });
-        semanticStackButton.addActionListener(e -> {
-            if (!parser.isInit()) return;
-            if (currentPage == null || Objects.equals(tabbedPane.getTitleAt(0), "Output:")) {
-                JOptionPane.showMessageDialog(panel1,"当前没有已打开的文件！","提示", JOptionPane.INFORMATION_MESSAGE);
-                return;
-            }
-            if (!currentPage.getBottomPanel().isVisible()) {
-                currentPage.getBottomPanel().setVisible(true);
-                currentPage.getSplitPane().setDividerLocation(250);
-            }
-
-            parser.setLexer(new Lexer(currentPage.getTextPane().getText()));
-            parser.startAnalyze();
-            currentPage.getTextArea().setText(parser.stackToString());
-            System.out.println(parser.stackToString());
-        });
-        interButton.addActionListener(e -> {
-            if (!parser.isInit()) return;
-            if (currentPage == null || Objects.equals(tabbedPane.getTitleAt(0), "Output:")) {
-                JOptionPane.showMessageDialog(panel1,"当前没有已打开的文件！","提示", JOptionPane.INFORMATION_MESSAGE);
-                return;
-            }
-            if (!currentPage.getBottomPanel().isVisible()) {
-                currentPage.getBottomPanel().setVisible(true);
-                currentPage.getSplitPane().setDividerLocation(250);
-            }
-
-            parser.setLexer(new Lexer(currentPage.getTextPane().getText()));
-            parser.startAnalyze();
-            currentPage.getTextArea().setText(parser.interToString());
-            System.out.println(parser.interToString());
-        });
+        grammarButton.addActionListener(buttonListener);
+        stateSetButton.addActionListener(buttonListener);
+        symbolTableButton.addActionListener(buttonListener);
+        lexerButton.addActionListener(buttonListener);
+        semanticStackButton.addActionListener(buttonListener);
+        interButton.addActionListener(buttonListener);
 
         parser.startInit();
     }

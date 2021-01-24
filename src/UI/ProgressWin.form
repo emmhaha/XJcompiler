@@ -11,10 +11,11 @@
       <component id="f07b3" class="javax.swing.JProgressBar" binding="progressBar">
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="0" indent="0" use-parent-layout="false">
-            <preferred-size width="300" height="20"/>
+            <preferred-size width="300" height="35"/>
           </grid>
         </constraints>
         <properties>
+          <font size="14"/>
           <stringPainted value="true"/>
         </properties>
       </component>

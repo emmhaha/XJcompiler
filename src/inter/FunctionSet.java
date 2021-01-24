@@ -56,7 +56,7 @@ public class FunctionSet {
         used += unit_3.getType().width;
         Id id = new Id((Word) symbol_2, unit_3.getType(), used);
         id.currentTemp = new Temp(id.type);
-        env.put((Word) symbol_2, id);
+        env.put(((Word) symbol_2).toString(), id);
         Unit unit = new Unit();
         semanticStack.put(top - 2, unit);
     }
@@ -90,6 +90,10 @@ public class FunctionSet {
         switch (firstLex) {
             case "loc":
                 unit = new Unit();
+                Type type = unit_2.getType();
+                Type type1 = unit_4.getType();
+                boolean im = Type.isInteger(type1);
+
                 if (Type.isInteger(unit_2.getType()) != Type.isInteger(unit_4.getType()) &&
                         !unit_2.getType().equals(unit_4.getType())) parser.error("类型错误：请检查变量声明类型与赋值的数值类型是否符合");
                 if (unit_2.isCode) {          // bool是算式
@@ -204,7 +208,7 @@ public class FunctionSet {
 
     public void loc() {
         if (firstLex.equals("ID")) {
-            Id id = env.get((Word) symbol_top);
+            Id id = env.get(((Word) symbol_top).toString());
             if (id == null) { parser.error("可能原因：标识符 “" + symbol_top + "” 没有预先定义！"); return; }
             semanticStack.put(top, id);
         }

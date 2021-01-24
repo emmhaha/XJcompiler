@@ -38,7 +38,7 @@ public class MyMenuBar extends JMenuBar {
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
         item.addActionListener(e -> {
             JFileChooser fc = new JFileChooser();
-            int val = fc.showOpenDialog(null);    //文件打开对话框
+            int val = fc.showOpenDialog(tabbedPane);    //文件打开对话框
             if(val == JFileChooser.APPROVE_OPTION) {
                 try {
                     if (tabbedPane.getTabCount() == 1 && Objects.equals(tabbedPane.getTitleAt(0), "Output:")) tabbedPane.removeAll();
@@ -47,6 +47,7 @@ public class MyMenuBar extends JMenuBar {
 
                     MainWin.addTab(tabbedPane, Utils.getFileName(path), newPage);
                     newPage.getTextPane().setText(Utils.readText(fc.getSelectedFile().toString()));
+                    MainWin.currentPage.highlight();
                 } catch (IOException ioException) {
                     ioException.printStackTrace();
                     JOptionPane.showMessageDialog(this,"文件打开失败！","错误", JOptionPane.ERROR_MESSAGE);

@@ -1,5 +1,7 @@
 package lexer;
 
+import java.util.Objects;
+
 public class Type extends Word {
 
     public int width;
@@ -14,18 +16,23 @@ public class Type extends Word {
         this.width = width;
     }
 
+    Type(Type type) {
+        super(type.value, type.tag);
+        this.width = type.width;
+    }
+
     public static boolean isNumeric(Type type) {
-        return type == Type.Float || type == Type.Int || type == Type.Char;
+        return Objects.equals(type.value, Type.Float.value) || Objects.equals(type.value, Type.Int.value) || Objects.equals(type.value, Type.Char.value);
     }
 
     public static boolean isInteger(Type type) {
-        return type == Type.Int || type == Type.Char;
+        return Objects.equals(type.value, Type.Int.value) || Objects.equals(type.value, Type.Char.value);
     }
 
     public static Type max(Type type1, Type type2) {
         if (!isNumeric(type1) || !isNumeric(type2)) return null;
-        else if (type1 == Type.Float || type2 == Type.Float) return Type.Float;
-        else if (type1 == Type.Int || type2 == Type.Int) return Type.Int;
+        else if (Objects.equals(type1.value, Type.Float.value) || Objects.equals(type2.value, Type.Float.value)) return Type.Float;
+        else if (Objects.equals(type1.value, Type.Int.value) || Objects.equals(type2.value, Type.Int.value)) return Type.Int;
         else return Type.Char;
     }
 

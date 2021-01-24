@@ -23,8 +23,11 @@ public class Main {
         //new TestUI();
         new MainWin(800, 600, srcPath, cachePath);
 
-//        Parser parser = new Parser(null, false);
-//        parser.setLexer(new Lexer(Utils.readText(srcPath)));
+//        Lexer lexer = new Lexer("\r\n\r\nint");
+//        lexer.setReader("\r\n\r\nin", null);
+//        lexer.show(6);
+//        Parser parser = new Parser(lexer, false);
+//        //parser.setLexer(lexer);
 //        parser.startInit();
 //        parser.startAnalyze();
 //        parser.showInterCode();

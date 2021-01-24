@@ -20,6 +20,11 @@ public class Word extends Token {
         this.value = value;
     }
 
+    Word(Word word) {
+        super(word.tag);
+        this.value = word.value;
+    }
+
     public String toString() {
         return value;
     }
