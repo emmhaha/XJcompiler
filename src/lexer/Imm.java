@@ -16,7 +16,7 @@ public class Imm<T> extends Token {
     }
 
     private Type getType() {
-        if (num instanceof Imm) return ((Imm) num).type;
+        if (num instanceof Imm) return ((Imm<?>) num).type;
         else return null;
     }
 

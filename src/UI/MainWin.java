@@ -71,6 +71,7 @@ public class MainWin {
             currentPage.getTextArea().setForeground(Color.BLACK);
             try {
                 switch (e.getActionCommand()) {
+
                     case "Grammar":
 
                         break;
@@ -93,6 +94,7 @@ public class MainWin {
                         parser.startAnalyze();
                         currentPage.getTextArea().setText(parser.interToString());
                 }
+                currentPage.getTextArea().setCaretPosition(0);
             } catch (Error error) {
                 currentPage.getTextArea().setForeground(Color.red);
                 currentPage.getTextArea().setText(error.toString());

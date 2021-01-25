@@ -22,8 +22,10 @@ public class MySplitPane extends JPanel{
     private JTextArea textArea;
     private int caretPosition = -1;
     private int lastCaretPosition = -1;
+    private int maxLines = 0;
 
     MySplitPane() {
+        Font pageFont = new Font("Consolas", Font.PLAIN, 16);
         setLayout(new BorderLayout());
 
         JPopupMenu popupMenu = new JPopupMenu();          // 右键菜单
@@ -41,10 +43,21 @@ public class MySplitPane extends JPanel{
             }
         };
 
+        int preferredSize = 99;
+        LineNumber lineNumber = new LineNumber();
+        lineNumber.setLine(preferredSize);
+        textPane.setFont(pageFont);
+        scrollPane.setRowHeaderView(lineNumber);
+
         textPane.addMouseListener(mouseAdapter);
         textPane.addCaretListener(e -> {
             lastCaretPosition = caretPosition;
             caretPosition = e.getDot();
+            int lines = (int) Math.ceil(scrollPane.getViewport().getViewSize().height / 20.0);
+
+            if (maxLines == lines || lines < preferredSize) return;
+            lineNumber.setLine(lines);
+            maxLines = lines;
         });
         textPane.addKeyListener(new KeyAdapter() {
             boolean isTextChange = false;
@@ -60,7 +73,6 @@ public class MySplitPane extends JPanel{
                 if (!isTextChange) return;
 
                 highlight();
-
                 isTextChange = false;
             }
         });
@@ -98,7 +110,6 @@ public class MySplitPane extends JPanel{
     public void highlight() {
         int changePoint = Math.min(lastCaretPosition, caretPosition);
         MainWin.lexer.setReader(textPane.getText(), changePoint);
-        //MainWin.lexer = new Lexer(textPane.getText());
         Document doc = textPane.getDocument();
         SimpleAttributeSet set = new SimpleAttributeSet();
 

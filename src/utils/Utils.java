@@ -1,6 +1,10 @@
 package utils;
 
+import javax.swing.*;
+import javax.swing.plaf.FontUIResource;
+import java.awt.*;
 import java.io.*;
+import java.util.Enumeration;
 
 public class Utils {
 
@@ -47,5 +51,14 @@ public class Utils {
             builder.append(" ");
         }
         return builder.toString();
+    }
+
+    public static void initGlobalFont(Font fnt){    // 设置全局字体
+        FontUIResource fontRes = new FontUIResource(fnt);
+        for(Enumeration<?> keys = UIManager.getDefaults().keys(); keys.hasMoreElements();){
+            Object key = keys.nextElement();
+            Object value = UIManager.get(key);
+            if(value instanceof FontUIResource) UIManager.put(key, fontRes);
+        }
     }
 }

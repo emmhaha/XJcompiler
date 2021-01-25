@@ -6,6 +6,7 @@ import UI.MainWin;
 import utils.Utils;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.*;
 
 public class Main {
@@ -14,14 +15,16 @@ public class Main {
         String srcPath = "src\\test.txt";
         String cachePath = "cache/";
 
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
-            e.printStackTrace();
-        }
+        Utils.initGlobalFont(new Font("微软雅黑", Font.PLAIN, 15));
+
+//        try {
+//            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+//        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+//            e.printStackTrace();
+//        }
 
         //new TestUI();
-        new MainWin(800, 600, srcPath, cachePath);
+        new MainWin(1100, 800, srcPath, cachePath);
 
 //        Lexer lexer = new Lexer("\r\n\r\nint");
 //        lexer.setReader("\r\n\r\nin", null);

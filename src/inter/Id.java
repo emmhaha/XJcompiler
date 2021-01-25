@@ -1,6 +1,5 @@
 package inter;
 
-import lexer.Temp;
 import lexer.Type;
 import lexer.Word;
 
