@@ -3,6 +3,8 @@ package parser;
 import UI.MainWin;
 import UI.ProgressWin;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import inter.Env;
 import inter.FunctionSet;
@@ -12,10 +14,7 @@ import lexer.Temp;
 import lexer.Token;
 import utils.Utils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.LinkedList;
+import java.util.*;
 
 public class Parser {
 
@@ -28,11 +27,12 @@ public class Parser {
     private final ArrayList<String> symbols = new ArrayList<>();
     private Hashtable<Integer, Hashtable<String, String>> Action;
     private Hashtable<Integer, Hashtable<String, String>> Goto;
-    private String[] first_item;
+    private String firstKey;
     public LinkedList<Token> symbolStack = new LinkedList<>();
     public Hashtable<Integer, Unit> semanticStack = new Hashtable<>();
     public Env env = new Env(null);
     public ProgressWin progressWin;
+    public JSONArray grammarArray;
     private boolean enable_cache = false;
     private boolean isInit = false;
     private boolean isAnalyze = false;
@@ -90,36 +90,25 @@ public class Parser {
 
     private void init() {    // 语法分析的初始化及前期准备
         try {
-            String[] G = {
-                    "program -> block", "block -> { decls stmts }", "decls -> decls decl",
-                    "decls -> $", "decl -> type ID ;", "type -> type [ NUM ]",
-                    "type -> BASIC", "stmts -> stmts stmt", "stmts -> $",
-                    "stmt -> loc = bool ;", "stmt -> IF ( bool ) stmt",
-                    "stmt -> IF ( bool ) stmt ELSE stmt", "stmt -> WHILE ( bool ) stmt",
-                    "stmt -> DO stmt WHILE ( bool ) ;", "stmt -> BREAK ;", "stmt -> block",
-                    "loc -> loc [ bool ]", "loc -> ID",
-                    "bool -> bool || join", "bool -> join", "join -> join && equality",
-                    "join -> equality", "equality -> equality == rel", "equality -> equality != rel",
-                    "equality -> rel", "rel -> expr < expr", "rel -> expr <= expr",
-                    "rel -> expr >= expr", "rel -> expr > expr", "rel -> expr",
-                    "expr -> expr + term", "expr -> expr - term", "expr -> term",
-                    "term -> term * unary", "term -> term / unary", "term -> unary",
-                    "unary -> ! unary", "unary -> - unary", "unary -> factor",
-                    "factor -> ( bool )", "factor -> loc", "factor -> NUM",
-                    "factor -> REAL", "factor -> TRUE", "factor -> FALSE"
-            };
+            int i = 1;
+            grammarArray = JSON.parseArray(Utils.readText("grammar.json"));
+            firstKey = (String) JSON.parseObject(grammarArray.get(0).toString()).keySet().toArray()[0];
+            for (Object o : grammarArray) {
+                JSONObject jsonObject = JSON.parseObject(o.toString());
+                String key = (String) jsonObject.keySet().toArray()[0];
+                for (Object value : jsonObject.values()) {
+                    JSONArray array = JSON.parseArray(value.toString());
+                    for (Object o1 : array) {
+                        Item item = new Item(key, o1.toString(), null, i++);
+                        grammar.add(item);
 
-            for (int i = 0; i < G.length; i++) {
-                String[] g = G[i].split(" -> ");
-                Item item = new Item(g[0], g[1], null, i + 1);
-                grammar.add(item);
-
-                if (!symbols.contains(item.key)) symbols.add(item.key);
-                item.value.forEach(s -> {
-                    if (!symbols.contains(s)) symbols.add(s);
-                });
+                        if (!symbols.contains(item.key)) symbols.add(item.key);
+                        item.value.forEach(s -> {
+                            if (!symbols.contains(s)) symbols.add(s);
+                        });
+                    }
+                }
             }
-            first_item = G[0].split(" -> ");
             setProgress(10, "文法加载完成！");
 
             if (enable_cache) {
@@ -127,12 +116,12 @@ public class Parser {
                 setProgress(30, null);
                 Goto = loadJson(MainWin.cachePath + "goto.json", new TypeReference<Hashtable<Integer, Hashtable<String, String>>>(){});
                 setProgress(50, null);
-                stateSet = loadJson(MainWin.cachePath + "state set.json", new TypeReference<ArrayList<ItemSet>>(){});
+                stateSet = loadJson(MainWin.cachePath + "item set.json", new TypeReference<ArrayList<ItemSet>>(){});
             }
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("缓存加载失败！");
-            setProgress(null, "缓存加载失败！正在重新生成符号表。。。");
+            setProgress(null, "缓存加载失败！正在重新生成分析表。。。");
             cacheLoadError = true;
         }
 
@@ -141,14 +130,14 @@ public class Parser {
         Goto = new Hashtable<>();
         stateSet = new ArrayList<>();
 
-        items(new Item(first_item[0] + "'", ". " + first_item[0], "$"));
+        items(new Item(firstKey + "'", ". " + firstKey, "$"));
         setProgress(90, "语法分析准备完成！");
 
         cacheLoadError = false;
         if(!enable_cache) return;
         saveAsJson(MainWin.cachePath + "action.json", Action);
         saveAsJson(MainWin.cachePath + "goto.json", Goto);
-        saveAsJson(MainWin.cachePath + "state set.json", stateSet);
+        saveAsJson(MainWin.cachePath + "item set.json", stateSet);
     }
 
     private void saveAsJson(String path, Object obj) {
@@ -163,6 +152,10 @@ public class Parser {
         return token = lexer.getToken();
     }
 
+    public Token getCurrentToken() {
+        return token;
+    }
+
     public void error(String message) {
         String lex = "EOF";
         int lines = lexer.lines;
@@ -170,7 +163,7 @@ public class Parser {
             lex = token.toString();
             lines = token.lines;
         }
-        throw new Error("\n在第" + lines + "行附近可能有错，检测到出错的词法单元：“" + lex + "” 。\n" + message);
+        throw new Error("\n在第" + lines + "行附近可能有错，检测到出错的词素：“" + lex + "” 。\n" + message);
     }
 
     private void analyze() {   // 开始语法分析、语义分析并生成中间代码
@@ -445,7 +438,7 @@ public class Parser {
 
     public String stateSetToString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("\n\n状态集：\n");
+        builder.append("\n\n项集族：\n");
         for (ItemSet i : stateSet) {
             builder.append(i.toString());
         }

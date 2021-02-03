@@ -1,5 +1,9 @@
 package utils;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+
 import javax.swing.*;
 import javax.swing.plaf.FontUIResource;
 import java.awt.*;
@@ -60,5 +64,24 @@ public class Utils {
             Object value = UIManager.get(key);
             if(value instanceof FontUIResource) UIManager.put(key, fontRes);
         }
+    }
+
+    public static String jsonToGrammar(JSONArray jsonArray, int width) {
+        StringBuilder builder = new StringBuilder();
+        for (Object o : jsonArray) {
+            JSONObject jsonObject = JSON.parseObject(o.toString());
+            String key = (String) jsonObject.keySet().toArray()[0];
+            builder.append(getSpace(width - key.length())).append(key).append(" -> ");
+
+            for (Object value : jsonObject.values()) {
+                JSONArray array = JSON.parseArray(value.toString());
+                for (int i = 0; i < array.size(); i++) {
+                    builder.append(array.get(i));
+                    if (i != array.size()-1) builder.append("\n").append(getSpace(width + 4));
+                    else builder.append("\n\n");
+                }
+            }
+        }
+        return builder.toString();
     }
 }

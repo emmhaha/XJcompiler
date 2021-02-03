@@ -3,10 +3,7 @@ package UI;
 import lexer.Token;
 
 import javax.swing.*;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
+import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -20,8 +17,8 @@ public class MySplitPane extends JPanel{
     private JPanel bottomPanel;
     private JLabel closeButton;
     private JTextArea textArea;
-    private int caretPosition = -1;
-    private int lastCaretPosition = -1;
+    private int caretPosition = 0;
+    private int lastCaretPosition = 0;
     private int maxLines = 0;
 
     MySplitPane() {
@@ -47,12 +44,12 @@ public class MySplitPane extends JPanel{
         LineNumber lineNumber = new LineNumber();
         lineNumber.setLine(preferredSize);
         textPane.setFont(pageFont);
+        textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 16));
+        setTabs(textPane, 4);
         scrollPane.setRowHeaderView(lineNumber);
 
         textPane.addMouseListener(mouseAdapter);
         textPane.addCaretListener(e -> {
-            lastCaretPosition = caretPosition;
-            caretPosition = e.getDot();
             int lines = (int) Math.ceil(scrollPane.getViewport().getViewSize().height / 20.0);
 
             if (maxLines == lines || lines < preferredSize) return;
@@ -61,10 +58,20 @@ public class MySplitPane extends JPanel{
         });
         textPane.addKeyListener(new KeyAdapter() {
             boolean isTextChange = false;
+            boolean isFirstTime = true;         // 用于使长按键盘keyPressed只执行一次
             int textLength = textPane.getText().length();
 
             @Override
+            public void keyPressed(KeyEvent e) {
+                if (!isFirstTime) return;
+                lastCaretPosition = textPane.getCaretPosition();
+                isFirstTime = false;
+            }
+
+            @Override
             public void keyReleased(KeyEvent e) {
+                isFirstTime = true;
+                caretPosition = textPane.getCaretPosition();
                 int length = textPane.getText().length();
                 if (textLength != length) {
                     isTextChange = true;
@@ -127,6 +134,24 @@ public class MySplitPane extends JPanel{
             System.err.println("Token:" + token.toString() + " start:" + token.startIndex + " length:" + token.length());
             badLocationException.printStackTrace();
         }
+    }
+
+    public static void setTabs(final JTextPane textPane, int charactersPerTab) {   // 设置textPane的tab长度
+        FontMetrics fontMetrics = textPane.getFontMetrics(textPane.getFont());
+        int charWidth = fontMetrics.charWidth(' ');
+        int tabWidth = charWidth * charactersPerTab;
+        TabStop[] tabs = new TabStop[5];
+
+        for (int j = 0; j < tabs.length; j++) {
+            int tab = j + 1;
+            tabs[j] = new TabStop(tab * tabWidth);
+        }
+
+        TabSet tabSet = new TabSet(tabs);
+        SimpleAttributeSet attributes = new SimpleAttributeSet();
+        StyleConstants.setTabSet(attributes, tabSet);
+        int length = textPane.getDocument().getLength();
+        textPane.getStyledDocument().setParagraphAttributes(0, length, attributes, false);
     }
 
     public JPanel getBottomPanel() {

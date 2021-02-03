@@ -162,7 +162,7 @@ public class Lexer {
                 }
                 readChar();
             } while (Character.isDigit(current_c));
-            throw new Error("\n在第" + this.lines + "行附近可能有错，检测到出错的词法单元：“" + current_c + "” \n");
+            throw new Error("\n在第" + this.lines + "行附近可能有错，检测到出错的词素：“" + current_c + "” \n");
         }
 
         if (Character.isLetter(current_c)) {

@@ -1,9 +1,15 @@
 package UI;
 
 import lexer.Lexer;
+import lexer.Token;
 import parser.Parser;
+import utils.Utils;
 
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -13,8 +19,8 @@ import java.util.Objects;
 public class MainWin {
     private JButton lexerButton;
     private JPanel panel1;
-    private JButton stateSetButton;
-    private JButton symbolTableButton;
+    private JButton itemSetButton;
+    private JButton analysisTableButton;
     private JButton semanticStackButton;
     private JButton interButton;
     private JTabbedPane tabbedPane;
@@ -43,13 +49,16 @@ public class MainWin {
         parser = new Parser(null, true);
         parser.setProgressWin(progressWin);
 
-        tabbedPane.addChangeListener(e -> currentPage = (MySplitPane) tabbedPane.getSelectedComponent());
+        tabbedPane.addChangeListener(e -> {
+            currentPage = (MySplitPane) tabbedPane.getSelectedComponent();
+            if (currentPage != null) currentPage.highlight();
+        });
 
         ActionListener buttonListener = e -> {
             if (!parser.isInit()) return;
 
-            if (Objects.equals(e.getActionCommand(), "State Set") ||
-                    Objects.equals(e.getActionCommand(), "Symbol Table") ||
+            if (Objects.equals(e.getActionCommand(), "Item Set") ||
+                    Objects.equals(e.getActionCommand(), "Analysis Table") ||
                     Objects.equals(e.getActionCommand(), "Grammar")) {
                 if (tabbedPane.getTabCount() == 0) {
                     MySplitPane mySplitPane = new MySplitPane();
@@ -71,14 +80,13 @@ public class MainWin {
             currentPage.getTextArea().setForeground(Color.BLACK);
             try {
                 switch (e.getActionCommand()) {
-
                     case "Grammar":
-
+                        currentPage.getTextArea().setText(Utils.jsonToGrammar(parser.grammarArray, 9));
                         break;
-                    case "State Set":
+                    case "Item Set":
                         currentPage.getTextArea().setText(parser.stateSetToString());
                         break;
-                    case "Symbol Table":
+                    case "Analysis Table":
                         currentPage.getTextArea().setText(parser.tableToString(9));
                         break;
                     case "Lexer":
@@ -96,14 +104,29 @@ public class MainWin {
                 }
                 currentPage.getTextArea().setCaretPosition(0);
             } catch (Error error) {
-                currentPage.getTextArea().setForeground(Color.red);
-                currentPage.getTextArea().setText(error.toString());
+                JTextArea currentTextArea = currentPage.getTextArea();
+                JTextPane currentTextPane = currentPage.getTextPane();
+                Token currentToken = parser.getCurrentToken();
+
+                Document doc = currentTextPane.getDocument();
+                SimpleAttributeSet set = new SimpleAttributeSet();
+                StyleConstants.setBackground(set, Color.red);
+
+                currentTextArea.setForeground(Color.red);
+                currentTextArea.setText(error.toString());
+                try {
+                    doc.remove(currentToken.startIndex, currentToken.length());
+                    doc.insertString(currentToken.startIndex, currentToken.toString(), set);
+                } catch (BadLocationException badLocationException) {
+                    System.err.println("start:" + currentToken.startIndex + " length:" + currentToken.length());
+                    badLocationException.printStackTrace();
+                }
             }
         };
 
         grammarButton.addActionListener(buttonListener);
-        stateSetButton.addActionListener(buttonListener);
-        symbolTableButton.addActionListener(buttonListener);
+        itemSetButton.addActionListener(buttonListener);
+        analysisTableButton.addActionListener(buttonListener);
         lexerButton.addActionListener(buttonListener);
         semanticStackButton.addActionListener(buttonListener);
         interButton.addActionListener(buttonListener);

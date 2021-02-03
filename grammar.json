@@ -1,79 +1,111 @@
-{
-  "program" : [
-    "block"
-  ],
-  "block" : [
-    "{ decls stmts }"
-  ],
-  "decls" : [
-    "decls decl",
-    "$"
-  ],
-  "decl" : [
-    "type ID ;"
-  ],
-  "type" : [
-    "type [ NUM ]",
-    "BASIC"
-  ],
-  "stmts" : [
-    "stmts stmt",
-    "$"
-  ],
-  "stmt" : [
-    "loc = bool ;",
-    "IF ( bool ) stmt",
-    "IF ( bool ) stmt ELSE stmt",
-    "WHILE ( bool ) stmt",
-    "DO stmt WHILE ( bool ) ;",
-    "BREAK ;",
-    "block"
-  ],
-  "loc" : [
-    "loc [ bool ]",
-    "ID"
-  ],
-  "bool" : [
-    "bool || join",
-    "join"
-  ],
-  "join" : [
-    "join && equality",
-    "equality"
-  ],
-  "equality" : [
-    "equality == rel",
-    "equality != rel",
-    "rel"
-  ],
-  "rel" : [
-    "expr < expr",
-    "expr <= expr",
-    "expr >= expr",
-    "expr > expr",
-    "expr"
-  ],
-  "expr" : [
-    "expr + term",
-    "expr - term",
-    "term"
-  ],
-  "term" : [
-    "term * unary",
-    "term / unary",
-    "unary"
-  ],
-  "unary" : [
-    "! unary",
-    "- unary",
-    "factor"
-  ],
-  "factor" : [
-    "( bool )",
-    "loc",
-    "NUM",
-    "REAL",
-    "TRUE",
-    "FALSE"
-  ]
-}
+[
+  {
+    "program" : [
+      "block"
+    ]
+  },
+  {
+    "block" : [
+      "{ decls stmts }"
+    ]
+  },
+  {
+    "decls" : [
+      "decls decl",
+      "$"
+    ]
+  },
+  {
+    "decl" : [
+      "type ID ;"
+    ]
+  },
+  {
+    "type" : [
+      "type [ NUM ]",
+      "BASIC"
+    ]
+  },
+  {
+    "stmts" : [
+      "stmts stmt",
+      "$"
+    ]
+  },
+  {
+    "stmt" : [
+      "loc = bool ;",
+      "IF ( bool ) stmt",
+      "IF ( bool ) stmt ELSE stmt",
+      "WHILE ( bool ) stmt",
+      "DO stmt WHILE ( bool ) ;",
+      "BREAK ;",
+      "block"
+    ]
+  },
+  {
+    "loc" : [
+      "loc [ bool ]",
+      "ID"
+    ]
+  },
+  {
+    "bool" : [
+      "bool || join",
+      "join"
+    ]
+  },
+  {
+    "join" : [
+      "join && equality",
+      "equality"
+    ]
+  },
+  {
+    "equality" : [
+      "equality == rel",
+      "equality != rel",
+      "rel"
+    ]
+  },
+  {
+    "rel" : [
+      "expr < expr",
+      "expr <= expr",
+      "expr >= expr",
+      "expr > expr",
+      "expr"
+    ]
+  },
+  {
+    "expr" : [
+      "expr + term",
+      "expr - term",
+      "term"
+    ]
+  },
+  {
+    "term" : [
+      "term * unary",
+      "term / unary",
+      "unary"
+    ]
+  },
+  {
+    "unary" : [
+      "! unary",
+      "- unary",
+      "factor"
+    ]
+  },
+  {
+    "factor" : [
+      "( bool )",
+      "loc",
+      "NUM",
+      "REAL",
+      "TRUE",
+      "FALSE"
+    ]
+  }
+]

@@ -1,13 +1,9 @@
-import UI.TestUI;
-import inter.Unit;
-import lexer.Lexer;
-import parser.Parser;
 import UI.MainWin;
+import lexer.Lexer;
 import utils.Utils;
 
-import javax.swing.*;
 import java.awt.*;
-import java.io.*;
+import java.io.IOException;
 
 public class Main {
 
@@ -26,11 +22,10 @@ public class Main {
         //new TestUI();
         new MainWin(1100, 800, srcPath, cachePath);
 
-//        Lexer lexer = new Lexer("\r\n\r\nint");
-//        lexer.setReader("\r\n\r\nin", null);
-//        lexer.show(6);
+//        Lexer lexer = new Lexer("\r\ni");
+//        lexer.setReader("aaaaa\r\ni", 4);
+//        lexer.show(9);
 //        Parser parser = new Parser(lexer, false);
-//        //parser.setLexer(lexer);
 //        parser.startInit();
 //        parser.startAnalyze();
 //        parser.showInterCode();
