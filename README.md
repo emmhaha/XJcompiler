@@ -5,10 +5,10 @@
 效果演示
 ---------
 1.显示文法
-![](https://github.com/emmhaha/XJcompiler/raw/master/picture/show%20grammar.jpg)
+![](https://github.com/emmhaha/XJcompiler/blob/master/picture/show%20grammar.jpg)
 
 2.显示项集族
-![](picture/show%20itemSet.jpg)
+![](https://github.com/emmhaha/XJcompiler/blob/master/picture/show%20error.jpg)
 
 3.显示语法分析表
 ![](picture/show%20table.jpg)
