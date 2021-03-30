@@ -5,7 +5,7 @@
 效果演示
 ---------
 1.显示文法
-![](picture/show%20grammar.jpg)
+![](https://github.com/emmhaha/XJcompiler/raw/master/picture/show%20grammar.jpg)
 
 2.显示项集族
 ![](picture/show%20itemSet.jpg)
