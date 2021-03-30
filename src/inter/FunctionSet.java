@@ -130,7 +130,8 @@ public class FunctionSet {
                 if (symbol_2.tag.equals(")")) {
                     if (Type.isNumeric(unit_3.getType())) parser.error("类型错误：IF语句括号里应该为bool类型");
                     unit.addCodes(unit_3.codes);
-                    unit.addCode("if " + unit_3.currentTemp + " is false goto " + newLabel);
+                    if (unit_3.equals(Constant.False)) unit.addCode("goto " + newLabel);
+                    else if (!unit_3.equals(Constant.True)) unit.addCode("if " + unit_3.currentTemp + " is false goto " + newLabel);
                     unit.addCodes(unit_top.codes);
                     unit.addCode(newLabel + ":");
                     semanticStack.put(top - 4, unit);

@@ -66,7 +66,7 @@ public class Item {
     }
 
     @JSONField(name = "id")
-    private void setID(int id) {
+    public void setID(int id) {
         this.id = id;
     }
 

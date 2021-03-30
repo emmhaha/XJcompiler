@@ -1,5 +1,6 @@
 package parser;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -17,16 +18,18 @@ public class ItemSet implements Iterable<Item> {
         setID(id);
     }
 
-    void setID(int id) {
+    @JSONField(name = "ID")
+    public void setID(int id) {
         this.ID = id;
+    }
+
+    @JSONField(name = "ID")
+    public int getID() {
+        return ID;
     }
 
     public HashSet<Item> getItemSet() {
         return itemSet;
-    }
-
-    public int getID() {
-        return ID;
     }
 
     void add(Item item) {
